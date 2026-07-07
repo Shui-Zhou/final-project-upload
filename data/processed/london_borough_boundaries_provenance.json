@@ -1,0 +1,21 @@
+{
+  "artefact": "london_borough_boundaries",
+  "schema_version": "1.0",
+  "source": {
+    "publisher": "Greater London Authority",
+    "service": "London Datastore / GLA ArcGIS London Borough layer",
+    "url": "https://gis.london.gov.uk/arcgis/rest/services/apps/webmap_context_layer/MapServer/3",
+    "query_url": "https://gis.london.gov.uk/arcgis/rest/services/apps/webmap_context_layer/MapServer/3/query?where=1%3D1&outFields=*&returnGeometry=true&f=geojson"
+  },
+  "build": {
+    "downloaded_at_bst": "2026-05-01 14:30",
+    "method": "curl -L --fail --silent query_url -o data/processed/london_borough_boundaries.geojson"
+  },
+  "row_counts": {
+    "features": 33
+  },
+  "notes": [
+    "Used by the D3 dashboard choropleth as the borough boundary layer.",
+    "Borough joins normalise names case-insensitively because the canonical LFB pipeline title-cases 'and'/'of' while the GLA layer keeps them lower-case."
+  ]
+}

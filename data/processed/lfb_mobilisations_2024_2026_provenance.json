@@ -1,0 +1,110 @@
+{
+  "artefact": "lfb_mobilisations_2024_2026",
+  "schema_version": "1.0",
+  "sources": [
+    {
+      "role": "mobilisation_2021_2024",
+      "filename": "LFB_Mobilisation_2021_2024.csv",
+      "relative_path": "data/raw/LFB_Mobilisation_2021_2024.csv",
+      "sha256": "ac5184b40db574a0b7272a53cf6711911a9c15c8b4297f3f85d8045e1a83cad9"
+    },
+    {
+      "role": "mobilisation_2025",
+      "filename": "LFB_Mobilisation_2025.csv",
+      "relative_path": "data/raw/LFB_Mobilisation_2025.csv",
+      "sha256": "5a6c8c160cf6a131ec33cded908505fc18dae69865a9c744980dd427cf9b471c"
+    },
+    {
+      "role": "metadata_xlsx",
+      "filename": "Mobilisations_Metadata.xlsx",
+      "relative_path": "data/raw/Mobilisations_Metadata.xlsx",
+      "sha256": "dec9ca5bf2feb358b6da5dc32af55610c12b7a8f55a0e8a416a651e5fa6d7df1"
+    }
+  ],
+  "publisher": "London Fire Brigade via London Datastore",
+  "publisher_urls": [
+    "https://data.london.gov.uk/dataset/london-fire-brigade-mobilisation-records"
+  ],
+  "joined_against": {
+    "artefact": "lfb_canonical_2024_2026",
+    "relative_path": "data/processed/lfb_canonical_2024_2026.parquet",
+    "sha256": "cf5b70d3a8efcb40bec167adca04dad4a25e77020975cdbe1ab9420a32697af3",
+    "join_key": "IncidentNumber"
+  },
+  "build": {
+    "extracted_at_utc": "2026-05-01T21:25:56.346545+00:00",
+    "script": "src/data/build_mobilisations.py",
+    "python_version": "3.13.9",
+    "pandas_version": "2.3.3"
+  },
+  "row_counts": {
+    "input_total_pre_filter": 985753,
+    "output_post_filter": 439974,
+    "dropped_by_date_filter": 545779
+  },
+  "date_filter": {
+    "field": "mobilised_at (parsed from DateAndTimeMobilised)",
+    "min_inclusive": "2024-01-01",
+    "max_inclusive": "2026-02-27",
+    "rationale": "Filter window is inherited from the canonical incident DateOfCall min/max, so mobilisation rows match the incident-level scope used elsewhere in the project."
+  },
+  "transformations_applied": [
+    "Parsed DateAndTimeMobilised / DateAndTimeMobile / DateAndTimeArrived to datetime (dayfirst=True, format='mixed', errors='coerce')",
+    "Filtered mobilised_at to canonical incident date range",
+    "Derived attendance_time_seconds (numeric coercion) and attendance_time_minutes",
+    "Derived is_first_arriving_pump = (PerformanceReporting == '1')",
+    "Derived is_first_ordered_pump = (PumpOrder == 1)",
+    "Derived exceeds_six_min_target = nullable boolean (pd.NA where time is NaN)",
+    "Derived borough_canonical = BoroughName trimmed + title-cased",
+    "Derived year_month, mobilised_hour from mobilised_at",
+    "Derived matches_canonical_incident = IncidentNumber present in lfb_canonical_2024_2026 IncidentNumber set, so downstream aggregations can explicitly exclude unmatched cross-boundary records from canonical-window claims"
+  ],
+  "constants": {
+    "first_pump_target_seconds": 360,
+    "attendance_seconds_sanity_band": [
+      60,
+      1500
+    ],
+    "join_coverage_floor_all_incidents": 0.93,
+    "join_coverage_floor_dispatched_incidents": 0.99
+  },
+  "output_columns": [
+    "IncidentNumber",
+    "CalYear",
+    "BoroughName",
+    "WardName",
+    "HourOfCall",
+    "ResourceMobilisationId",
+    "Resource_Code",
+    "PerformanceReporting",
+    "DateAndTimeMobilised",
+    "DateAndTimeMobile",
+    "DateAndTimeArrived",
+    "TurnoutTimeSeconds",
+    "TravelTimeSeconds",
+    "AttendanceTimeSeconds",
+    "DateAndTimeLeft",
+    "DateAndTimeReturned",
+    "DeployedFromStation_Code",
+    "DeployedFromStation_Name",
+    "DeployedFromLocation",
+    "PumpOrder",
+    "PlusCode_Code",
+    "PlusCode_Description",
+    "DelayCodeId",
+    "DelayCode_Description",
+    "mobilised_at",
+    "mobile_at",
+    "arrived_at",
+    "attendance_time_seconds",
+    "attendance_time_minutes",
+    "is_first_arriving_pump",
+    "is_first_ordered_pump",
+    "exceeds_six_min_target",
+    "borough_canonical",
+    "year_month",
+    "mobilised_hour",
+    "matches_canonical_incident"
+  ],
+  "scope_note": "This artefact supports response/deployment evidence (deployed-from station, pump order, arrival time). Do not promote it to a station-coverage or dispatch-optimisation claim without separate station-location and travel-time evidence."
+}

@@ -1,0 +1,135 @@
+%&latexf
+\documentclass[]{kclthesis}
+
+\modulecode{7CCSMPRJ}
+\submissiontitle{Final Project Report 2025/26}
+\studentnumber{K25120780}
+\programme{MSc Urban Informatics}
+\supervisor{Dr Alfie Abdul-Rahman}
+\wordcount{14,900 (main text \S1--\S8)}
+\title{Emergency Services Response Visual Analytics:\newline An Interactive Dashboard for the London Fire Brigade}
+\author{Shui Zhou}
+\ReleaseProject{1}
+\department{Informatics}
+\usepackage[intoc]{nomencl} 
+%\makenomenclature
+\makeindex
+\usepackage[toc, acronym]{glossaries} 
+\usepackage{float}
+\usepackage[utf8]{inputenc}
+\usepackage{graphbox}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+\geometry{margin=2.5cm}
+
+\newfam\msbfam
+\def\Bbb#1{\fam\msbfam\relax#1}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{exa}{Example}[section]
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{conjecture}[theorem]{Conjecture}
+
+\newcommand{\ind}{1\hspace{-2.1mm}{1}} %Indicator Function
+\newcommand{\I}{\mathtt{i}}
+\newcommand{\D}{\mathrm{d}}
+\newcommand{\E}{\mathrm{e}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\sgn}{\mathrm{sgn}}
+\newcommand{\atanh}{\mathrm{arctanh}}
+\def\equalDistrib{\,{\buildrel \Delta \over =}\,}
+\numberwithin{equation}{section}
+\def\blue#1{\textcolor{blue}{#1}}
+\def\red#1{\textcolor{red}{#1}}
+
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{2}
+
+% Allow LaTeX more freedom to stretch interword space to avoid overfull
+% boxes with long hyphenated compounds (e.g. "uncertainty-aware
+% visual-analytics interface for emergency-service response equity")
+\setlength{\emergencystretch}{2em}
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny,
+  captionpos=b
+}
+
+\begin{document}
+\pagenumbering{gobble}
+
+\maketitle
+
+\include{contents/originality_avowal}
+\include{contents/acknowledgements}
+
+\include{contents/abstract}
+
+\pagenumbering{roman}
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
+\tableofcontents
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\include{contents/figures_tables}
+\fancyhead{}
+\fancyfoot{}
+\pagestyle{fancy} 
+%\fancyhead{\sffamily\small \thepage}
+%\fancyhead{\sffamily\small \nouppercase{\rightmark}}
+\fancyhead[RO,LE]{\sffamily\small \thepage}
+\fancyhead[LO,RE]{\sffamily\small \nouppercase{\rightmark}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.0pt}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\pagenumbering{arabic}
+
+\input{contents/introduction}
+\clearpage
+\input{contents/literature}
+\clearpage
+\input{contents/background}
+\clearpage
+\input{contents/approach}
+\clearpage
+\input{contents/implementation}
+\clearpage
+\input{contents/results}
+\clearpage
+\input{contents/professionalissues}
+\clearpage
+\input{contents/conclusion}
+
+\newpage
+\bibliographystyle{ieeetr}
+\bibliography{contents/project}
+
+\appendix
+\input{contents/app_1}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

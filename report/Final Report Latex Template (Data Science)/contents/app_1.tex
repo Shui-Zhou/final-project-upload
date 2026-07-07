@@ -1,0 +1,223 @@
+\section{Source Code and Reproducibility}
+
+Supplementary artefacts are maintained in the submitted project repository rather than duplicated in full in this appendix. The public repository is \url{https://github.com/Shui-Zhou/final-project-upload}; the assessed source snapshot is the submitted code bundle. The appendix therefore gives the source-code index, selected implementation listings, data-source index, figure index, evaluation artefact index, and dashboard operating guide needed to inspect the submitted artefact. The repository entry points below are sufficient to rebuild the data artefacts, run the dashboard locally, and trace the report's figures and evaluation materials.
+
+\subsection{Source-Code Index}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{p{4.3cm}X}
+\toprule
+Path & Purpose \\
+\midrule
+\path{src/data/build_canonical.py} & Builds the canonical incident parquet and its dictionary, provenance, and data-quality memo. \\
+\path{src/data/build_borough_summary.py} & Aggregates the canonical incident table to the cells defined by borough, month, and incident group used by the dashboard. \\
+\path{src/data/build_mobilisations.py} & Builds the mobilisation artefact and persists the \path{matches_canonical_incident} flag used for matched-only deployment claims. \\
+\path{src/data/build_station_locations.py} & Builds the incident-derived assignment-footprint station centroids. \\
+\path{src/data/build_published_station_proximity.py} & Builds the public station-address postcode-geocoding recovery, D1 comparison table, borough proximity table, and station-proximity figures. \\
+\path{src/data/build_report_evaluation_figures.py} & Builds report-side early-context, results, and robustness figures with JSON/markdown sidecar memos. \\
+\path{src/data/build_closure_cohort_context.py} & Builds the Taylor closure-cohort descriptive cross-check figure, parquet, provenance JSON, and DQ memo. \\
+\path{src/api/app.py} & Flask application factory and JSON API endpoints for borough summaries, boundaries, station footprints, and footprint scenarios. \\
+\path{src/dashboard/dashboard.js} & D3 linked-view dashboard state, rendering, brushing, filtering, and table update logic. \\
+\path{tests/} & Pytest contract tests for data artefacts, API behaviour, mobilisation matching, station footprints, station-address proximity, and report figures. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Selected Implementation Listings}
+
+Listings~\ref{lst:nullable-exceedance}--\ref{lst:dashboard-render-loop} show the parts of the implementation most directly tied to the thesis claims: denominator-safe response-time aggregation, bounded API filtering, and linked dashboard re-rendering. Full source files are submitted with the project code.
+
+\begin{lstlisting}[language=Python, caption={Nullable exceedance flag used to keep missing first-pump times out of the denominator.}, label={lst:nullable-exceedance}]
+rt = df["response_time_seconds"]
+df["exceeds_six_min_target"] = pd.array(
+    np.where(rt.isna(), pd.NA, rt > FIRST_PUMP_TARGET_SECONDS),
+    dtype="boolean",
+)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python, caption={Borough-summary API filtering rejects unknown keys before returning aggregate rows.}, label={lst:api-filtering}]
+unknown = set(request.args.keys()) - set(FILTERABLE_COLUMNS)
+if unknown:
+    return jsonify({
+        "error": "unknown filter keys",
+        "unknown_keys": sorted(unknown),
+        "allowed_keys": list(FILTERABLE_COLUMNS),
+    }), 400
+
+df = summary
+for col in FILTERABLE_COLUMNS:
+    values = request.args.getlist(col)
+    if values:
+        df = df[df[col].isin(values)]
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Shared dashboard state drives the linked map, trend, distribution, and ranking panels.}, label={lst:dashboard-render-loop}]
+function render() {
+  renderSummary();
+  renderMap();
+  renderTrend();
+  renderDistribution();
+  renderTable();
+}
+
+path.on("click", (_, feature) => {
+  const match = state.rows.find(
+    (row) => normName(row.borough_canonical) === normName(feature.properties.name),
+  );
+  if (match) {
+    state.borough = match.borough_canonical;
+    els.borough.value = state.borough;
+    render();
+  }
+});
+\end{lstlisting}
+
+\subsection{Reproducibility Commands}
+
+The current artefact set was validated with the following commands from the repository root:
+
+\begin{verbatim}
+python src/data/build_published_station_proximity.py
+python src/data/build_report_evaluation_figures.py
+python src/data/build_closure_cohort_context.py
+python -m pytest tests/ -q
+python -m compileall src
+git diff --check
+\end{verbatim}
+
+The broader rebuild sequence is documented in \path{RUNBOOK.md}. Binary raw inputs and generated parquets are intentionally excluded from version control; tracked markdown/JSON sidecars provide the audit trail for schemas, data-quality checks, source URLs, and transformation notes.
+
+\subsection{Verification Test Matrix}
+
+The automated verification suite contains 77 pytest tests. The table groups them by the validation class they support; counts are taken from the current \path{tests/test_*.py} functions rather than estimated from prose.
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{p{3.2cm}p{2.3cm}Xp{3.2cm}}
+\toprule
+Verification class & Test count & Representative invariants & Edge cases covered \\
+\midrule
+Canonical schema and published baseline bands & 14 & Required raw/derived columns, datetime parsing, response-time seconds/minutes consistency, row/date/borough counts, incident-group taxonomy, false-alarm and exceedance bands, precise/rounded coordinate bands. & Unit regression, coordinate-family regression, incident-group drift. \\
+Borough-summary cross-artefact consistency & 9 & Unique borough/month/group keys, cell count within expected grid, incident-count sum against canonical table, percentile ordering, probability ranges, borough-set match, recorded-time denominator regression. & Empty-cell handling, denominator regression, non-monotone percentiles. \\
+Mobilisation schema and matched-canonical partition & 18 & Raw/derived mobilisation columns, datetime and attendance-time units, first-arriving-pump logic, join share, first-pump time agreement with canonical incidents, borough/station population, \path{matches_canonical_incident} truth table. & Cross-boundary/unmatched rows kept out of matched-only deployment claims. \\
+API contract and footprint scenario paths & 20 & Health/dashboard/boundary routes, borough-summary schema, filter round-trips, multi-value unions, JSON null safety, station-footprint and footprint-scenario schemas. & HTTP 400 on unknown filter keys, unknown station names, unknown scenario keys, and removing all stations; unknown filter values return empty HTTP 200. \\
+Station-location and public-address invariants & 13 & Incident-derived station centroid count, London coordinate envelopes, non-negative IQRs, centroid-in-own-incident bounding boxes, public station row/geocode counts, known typo corrections, D1 comparison matching, borough proximity completeness. & Prevents footprint centroids being treated as building locations or routing-grade coverage. \\
+Report figure artefacts and sidecars & 3 & Required report-side figures exist, are non-empty, have memo sidecars, and summary metrics keep key borough/coordinate/sensitivity values in expected bands. & Missing figure, stale memo, headline metric drift. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{p{3.1cm}Xp{3.2cm}}
+\toprule
+Scripted manual UI check & Expected observation & Evidence retained \\
+\midrule
+Linked selection & Selecting a borough or ranking row updates the map, trend, distribution, metrics, and table from the same state object. & Dashboard overview and component screenshots in \path{figures/dashboard/}. \\
+Empty state & A deliberately unpopulated selection shows the amber empty-state banner instead of leaving broken or stale panels. & \path{fig_dashboard_empty_state.png}. \\
+Filter round-trip & Borough, month, and incident-group controls preserve the selected state and render denominator-qualified values. & Strand 2 task script and screenshot-capture utility. \\
+Responsive layout & The 390\,px mobile viewport has no horizontal overflow; desktop remains the primary comparative-map context. & \path{fig_dashboard_mobile_390.png}. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Data Sources, Figures, and Evaluation Artefacts}
+
+\subsection{Data Source Index}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{p{4.0cm}p{3.6cm}X}
+\toprule
+Source & Local role & Notes \\
+\midrule
+LFB Incident Records \cite{lfb_incidents} & Primary incident table & 2024-01 to 2026-02 slice; canonicalised into \path{lfb_canonical_2024_2026.parquet}. \\
+LFB Mobilisation Records \cite{lfb_mobilisations} & Appliance-deployment qualifier & Used only through the matched-canonical partition for deployment-side claims. \\
+ONS / GLA borough boundaries \cite{ons_boundaries} & Borough geometry & Used for borough aggregation and choropleth rendering. \\
+LFB public station-address list \cite{lfb_stations} & Station-address proximity context & Postcode-geocoded and treated as postcode-level proximity, not routing-grade station coverage. \\
+postcodes.io \cite{postcodesio} & Public postcode geocoder & Used to convert station postcodes to approximate coordinates. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Report Figure Index}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{p{5.2cm}X}
+\toprule
+Path & Contents \\
+\midrule
+\path{figures/dashboard/} (report folder) & Six dashboard screenshots: desktop overview, linked selection, trend panel, ranking table, empty-state banner, and mobile viewport. \\
+\path{figures/early_context/} (report folder) & Front-loaded figures: motivation borough map and linked-view wireframe; the earlier coordinate-uncertainty diagram is superseded by the \S3.3 evidence-support matrix (Table~\ref{tab:evidence-support}). \\
+\path{figures/results_evaluation/} (report folder) & Seven results/robustness figures generated from tracked artefacts, including the Taylor closure-cohort descriptive cross-check. \\
+\path{figures/station_proximity/} (report folder) & Two D1 station-address proximity figures used in the evaluation chapter. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Evaluation Artefacts}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{p{5.4cm}X}
+\toprule
+Path & Contents \\
+\midrule
+\path{tests/evaluation/strand1_findings_summary.md} & Heuristic-walkthrough findings. \\
+\path{tests/evaluation/strand2_thinkaloud_task_script.md} & Think-aloud task protocol for borough comparison and linked-view interpretation. \\
+\path{tests/evaluation/strand3_rq5_uncertainty_probe.md} & Uncertainty and station-footprint/proximity probe. \\
+\path{tests/evaluation/strand2_strand3_findings_summary.md} & Non-identifying compact think-aloud findings summary for Participants 1--3. \\
+\path{tests/evaluation/observation_log_template.md} & Per-session observation template for task completion, panel choice, uncertainty noticing, and station-caveat interpretation. \\
+\path{tests/evaluation/capture_dashboard_figures.py} & Screenshot-capture utility for the dashboard figures used in \S6. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Dashboard User Guide}
+
+This appendix is a short operating guide for a reader who wants to launch the dashboard and reproduce the inspection workflow evaluated in \S6, without reading the implementation chapter first.
+
+\subsection{Requirements and Launch}
+
+The dashboard requires Python 3.10+ and the dependencies in \path{requirements.txt}. From the repository root:
+
+\begin{verbatim}
+python -m venv .venv && source .venv/bin/activate
+python -m pip install -r requirements.txt
+python src/data/build_canonical.py
+python src/data/build_borough_summary.py
+flask --app src.api.app:create_app run --debug --port 5057
+\end{verbatim}
+
+The two build scripts regenerate the untracked parquet artefacts from the raw LFB workbook, which must be present under \path{data/} (it is excluded from version control for licensing reasons; its source URL and SHA-256 are recorded in the provenance sidecar). The boundary GeoJSON is tracked directly. The dashboard is then served at \path{http://127.0.0.1:5057/dashboard}.
+
+\subsection{Controls and Linked Behaviour}
+
+The interface holds one shared selection state: \emph{borough $\times$ month $\times$ incident group}. It can be changed three ways: the three select controls at the top, clicking a borough on the map, or clicking a row in the ranking table. Any change re-renders all four panels together:
+
+\begin{itemize}
+    \item \textbf{Borough map (choropleth).} Fill colour encodes the six-minute exceedance share for the selected month and incident group. Hovering a borough shows its incident count, median and p90 response times, denominator-qualified exceedance share, and precise-coordinate coverage.
+    \item \textbf{Monthly trend panel.} Incident count and exceedance share for the selected borough and group across the full 26-month slice.
+    \item \textbf{Response-distribution panel.} Median-to-p95 response-time ranges for the three incident groups in the selected cell, against the dashed six-minute reference line.
+    \item \textbf{Ranking table.} Boroughs ordered by exceedance share for the selected month and group, with exact values and the per-borough precise-coordinate coverage column.
+\end{itemize}
+
+If the selected combination has no data, an amber empty-state banner replaces silent blank panels; adjusting any filter recovers a populated view.
+
+\subsection{How to Read the Values}
+
+Exceedance shares are computed over incidents \emph{with a recorded first-pump attendance time}, not over all incidents; the ranking table's coordinate-coverage column reports how much of each borough's data carries precise coordinates (37.9\% overall). A defensible comparison therefore reads three things together: the exceedance value, the incident count behind it, and the coverage share. A high-exceedance borough with a small count or low coverage deserves a weaker claim.
+
+\subsection{What the Station Evidence Does and Does Not Support}
+
+Station-related evidence in this project is report-side and API-side, not an interactive map layer: the current dashboard screen does not render station markers, and the footprint-scenario UI toggle is not implemented in this iteration (\S6.3). The assignment-footprint artefact locates each station's \emph{historical incident responsibility centroid}, not its building; the public station-address table adds postcode-level proximity context only. Neither supports coverage, routing, or relocation conclusions (\S5.5--\S5.6, \S6.2).
+
+\subsection{Example Task}
+
+To repeat the comparison task in Table~\ref{tab:task-evaluation-matrix}: select \emph{Fire} as the incident group, click \emph{Hillingdon} on the map, note its exceedance share and trend, then click an inner-London row such as \emph{Tower Hamlets} in the ranking table and compare the two boroughs' exceedance values, incident counts, and coordinate-coverage shares before deciding which claims the data supports.
+
+\subsection{Known Limitations}
+
+The current dashboard still has no one-click reset to the all-London default, and the fuller uncertainty encodings described in \S6.5 remain second-iteration work. The station-related evidence is also intentionally separated from the live dashboard screen because the project does not implement a routing-grade station-coverage model.

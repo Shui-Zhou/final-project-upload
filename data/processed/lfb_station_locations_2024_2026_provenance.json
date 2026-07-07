@@ -1,0 +1,37 @@
+{
+  "artefact": "lfb_station_locations_2024_2026",
+  "schema_version": "1.0",
+  "source": {
+    "filename": "lfb_canonical_2024_2026.parquet",
+    "relative_path": "data/processed/lfb_canonical_2024_2026.parquet",
+    "sha256": "cf5b70d3a8efcb40bec167adca04dad4a25e77020975cdbe1ab9420a32697af3",
+    "upstream_artefact": "lfb_canonical_2024_2026"
+  },
+  "build": {
+    "extracted_at_utc": "2026-05-01T14:11:22.847784+00:00",
+    "script": "src/data/build_station_locations.py",
+    "python_version": "3.12.13",
+    "pandas_version": "3.0.2",
+    "pyproj_version": "3.7.2"
+  },
+  "row_counts": {
+    "canonical_input": 293646,
+    "station_output": 102
+  },
+  "method": [
+    "Derive each station's responsibility-footprint centroid as the (median Easting_rounded, median Northing_rounded) of all incidents grouped by IncidentStationGround.",
+    "Convert OSGB36 (EPSG:27700) to WGS84 (EPSG:4326) via pyproj for D3-friendly latitude / longitude.",
+    "Compute IQR of Easting_rounded and Northing_rounded as a cheap dispersion proxy for the station's responsibility footprint."
+  ],
+  "honesty_note": "The output is the centroid of each station's responsibility footprint, not the location of the brick-and-mortar fire station building. It is therefore an assignment-footprint proxy only: useful for comparing historic station-ground responsibility patterns, but not a station-coverage, routing, or relocation model.",
+  "output_columns": [
+    "station_name",
+    "incident_count",
+    "easting_centroid_m",
+    "northing_centroid_m",
+    "easting_iqr_m",
+    "northing_iqr_m",
+    "longitude",
+    "latitude"
+  ]
+}

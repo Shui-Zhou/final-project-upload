@@ -1,0 +1,62 @@
+\section{Background}
+
+This chapter provides the technical and domain background needed to read the rest of the report. The literature review (\S2) covers research positioning; this chapter covers the standing concepts and dataset specifics that the design and implementation chapters assume.
+
+\subsection{The London Fire Brigade and the 2024--2026 Open Data Window}
+
+The London Fire Brigade (LFB) is the statutory fire and rescue authority for Greater London, operating 102 fire stations (the count of distinct \path{IncidentStationGround} values present in the 2024--2026 dataset) across the 33 London local-authority areas (the 32 London boroughs plus the City of London Corporation) and responding to approximately 135{,}000 incidents per year (293{,}646 incidents observed over the 26-month slice used here). Its operational performance is published against a headline first-pump attendance target: the first pump should attend the scene within \textbf{six minutes} (360 seconds) of the call being received~\cite{lfb_attendance}. Throughout this report, response-performance shares are computed over \emph{recorded} attendance times only: for any subset $A$ of the canonical incident slice,
+\begin{equation}
+E(A) \;=\; \frac{\bigl|\{\, i \in A \cap R \;:\; t_i > 360\ \mathrm{s} \,\}\bigr|}{\bigl| A \cap R \bigr|},
+\qquad
+R = \{\, i \;:\; t_i\ \mathrm{recorded} \,\},
+\label{eq:exceedance-share}
+\end{equation}
+where $t_i$ is the first-pump attendance time of incident $i$ in seconds. Every exceedance share quoted later --- from the slice-wide 32.4\% of \S1.4 to the per-cell dashboard values of \S5.2 --- is an instance of $E(A)$ for a stated subset $A$. The LFB Incident Records dataset~\cite{lfb_incidents}, published continuously on the London Datastore under the Open Government Licence, releases one row per incident with 39 fields covering call, dispatch, attendance times, incident classification, and partial location information; this project uses the 2024-01 to 2026-02 slice (293{,}646 rows, 26 calendar months, fully post-COVID).
+
+Three features of the dataset shape every downstream design choice in this report. First, incidents are classified into a top-level three-way taxonomy --- \emph{Fire} (12.9\,\%), \emph{False Alarm} (46.5\,\%), and \emph{Special Service} (40.6\,\%, including medical co-responses, road traffic collisions, persons-trapped, and flooding) --- so the 6-minute target is averaged across a workload that is dominantly non-fire. Second, the dataset records what each incident \emph{cost} in resources (\texttt{NumPumpsAttending}, \texttt{NumStationsWithPumpsAttending}) but not the dispatch \emph{rule} that produced that cost: per-station capacity, ride-time policies, and call-prioritisation logic are operational data not released publicly. Third, the dataset is event-resolution but not mobilisation-resolution: a sustained fire that returned multiple appliances over an hour appears as a single row, not as a mobilisation timeline. These three features bound the analytical questions the dashboard can support; the design (\S4) and implementation (\S5) chapters return to each constraint explicitly.
+
+\subsection{Visual Analytics: Operating Definitions}
+
+The literature review (\S2) cites several adjacent communities --- information-visualisation, geo-visualisation, dashboard research, uncertainty visualisation, cognitive science of decision-making --- whose vocabularies sometimes use the same word for slightly different things. To avoid ambiguity later, this report adopts the following operating definitions, each anchored to one of the §2 references:
+
+\begin{itemize}
+    \item \textbf{Visual analytics (VA)} --- following the Thomas \& Cook 2005 framing carried by Andrienko \& Andrienko~\cite{andrienko2007} and operationalised by Munzner~\cite{munzner2009,munzner2014}, the synergetic combination of database operations, computational analysis, and interactive visualisation in service of a human analyst's reasoning task. The emphasis is on \emph{interactive reasoning support}, not on producing a static report.
+    \item \textbf{Dashboard} --- following Sarikaya et al.~\cite{sarikaya2018} and Bach et al.~\cite{bach2023patterns}, a multi-view interactive visual display whose layout, interactivity, and data semantics are bounded by an explicit purpose, audience, and update cadence. ``Dashboard'' here is therefore narrower than ``visualisation'': a single map is a visualisation but not a dashboard.
+    \item \textbf{Linked view / brushing} --- following Yi et al.'s \emph{Connect} interaction category~\cite{yi2007}, a multi-panel visualisation where a selection in one panel propagates highlight to the corresponding records in every other panel. The dashboard's borough $\to$ time-series $\to$ distribution propagation is the canonical instance.
+    \item \textbf{Uncertainty encoding} --- following MacEachren et al.~\cite{maceachren2012}, the use of a visual variable or adjacent exposure field to make data uncertainty visible \emph{at the same level of attention} as the data point itself. In the implemented first iteration, this is realised through denominator exposure, median-to-p95 response ranges, and precise-coordinate coverage fields; fuller quantile dotplots, fuzziness, and natural-frequency tooltips remain second-iteration items after Hullman et al.~\cite{hullman2015hops} and Padilla et al.~\cite{padilla2018}.
+    \item \textbf{Station-related context} --- this project's term for the exploratory assignment-footprint and public station-address proximity layer of \S4.5. It is a straight-line context cue around historical incident responsibility and postcode-geocoded station addresses, not a routing-grade station-coverage, dispatch, or relocation model. The contrast is with the location-allocation optimisation literature surveyed in \S2.5 (\cite{church1974, goldberg2004, reconfig2023, beijing2021, ocmola2018, spacesyntax2023}).
+\end{itemize}
+
+Each definition is referenced verbatim in the chapters that use the term, so a reader can resolve any later ambiguity by returning to this subsection.
+
+\subsection{Geospatial and Temporal Granularities}
+
+The dashboard works at three nested geospatial granularities, all derived from the same input record. Greater London is divided by the Office for National Statistics into 33 \emph{boroughs} (the political unit), each containing on average 18--20 \emph{wards} (the administrative-management unit), each in turn covering one or more \emph{Lower-Layer Super Output Areas} (LSOAs, the statistical-disclosure unit, mean population $\approx$\,1{,}500). The LFB Incident Records release exposes each of these via dedicated columns (\texttt{IncGeo\_BoroughName}, \texttt{IncGeo\_WardName}, and the LSOA-derived \texttt{Easting\_rounded} / \texttt{Northing\_rounded} pair); the 2024 vintage of the ONS Open Geography Portal boundaries~\cite{ons_boundaries} is used for joins.
+
+A subtler feature of the schema is that the dataset releases \emph{two coordinate families} that must not be conflated. The precise per-incident coordinates (\texttt{Easting\_m}, \texttt{Northing\_m}, plus the derived \texttt{Latitude} / \texttt{Longitude} and full postcode) are present for only $\approx$\,37.9\% of records: LFB suppresses them on the remaining $\approx$\,62\% on disclosure-control grounds when the address could re-identify an individual. The 100\,m-grid coordinates (\texttt{Easting\_rounded}, \texttt{Northing\_rounded}) are released for $\approx$\,100\% of records. Borough- and ward-level aggregation can therefore use the rounded family without bias, while diagnostic density/hexbin mapping must use the precise family and explicitly carry the missingness as a 62\% gap that is suppressed, and may not be random. The dashboard exposes both as separate dataset facets rather than silently dropping non-precise records (see \S5.2). Table~\ref{tab:evidence-support} generalises this two-family rule into the evidence-support map assumed by \S4--\S6.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.1cm}*{5}{>{\centering\arraybackslash}X}}
+\toprule
+Claim class & Borough / rounded fields & Precise coordinates & Recorded first-pump times & Matched mobilisation partition & Station-address points \\
+\midrule
+Incident demand ranking and monthly trends & \textcolor{teal!60!black}{\textbf{Primary}} & -- & -- & -- & -- \\
+\addlinespace
+Response-performance shares and distributions (Eq.~\ref{eq:exceedance-share}) & \textcolor{teal!60!black}{\textbf{Primary}} & -- & \textcolor{teal!60!black}{\textbf{Primary}} & \textcolor{blue!60!black}{\textbf{Qualifier}} & -- \\
+\addlinespace
+Street-level density diagnostics & -- & \textcolor{orange!80!black}{\textbf{Diagnostic}} & -- & -- & -- \\
+\addlinespace
+Appliance-level deployment patterns & -- & -- & -- & \textcolor{teal!60!black}{\textbf{Primary}} & -- \\
+\addlinespace
+Station-address proximity context & \textcolor{violet!70!black}{\textbf{Context}} & -- & -- & -- & \textcolor{violet!70!black}{\textbf{Context}} \\
+\midrule
+Routing-grade coverage, dispatch, or relocation & \multicolumn{5}{c}{\textcolor{red!70!black}{\textbf{Not supported by any family in this evidence base (\S4.5)}}} \\
+\bottomrule
+\end{tabularx}
+\caption{Evidence-support matrix: which evidence family supports which claim class. Primary carries the claim; Diagnostic supports subset-only robustness checks; Qualifier conditions interpretation; Context is a descriptive cue; a dash marks an unused family.}
+\label{tab:evidence-support}
+\end{table}
+
+Temporally the slice covers 2024-01-01 to 2026-02-27 (26 calendar months) and is therefore \emph{entirely post-COVID-19}. Sharma et al.~\cite{predictive2024} show, on Edmonton EFRS data, that pandemic-era model errors are heterogeneously affected across event types (medical-event MAE rose $\approx$\,70\%, fire-event MAE only $\approx$\,8\%, motor-vehicle MAE actually declined). Any historical-trend comparison made in \S6 against pre-pandemic LFB studies (e.g.\ Taylor's 2012--2014 dwelling-fire window~\cite{spatial2015}) must therefore allow for category-specific level shifts rather than assume a uniform pandemic correction. The dashboard slices time at four granularities --- year, month, weekday, and hour-of-day --- preserved as derived columns in the canonical dataset described in \S5.2.

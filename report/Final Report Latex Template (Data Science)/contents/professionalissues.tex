@@ -1,0 +1,49 @@
+\section{Legal, Social, Ethical and Professional Issues}
+
+This chapter sets out the legal, social, ethical, and professional considerations relevant to a public-facing performance dashboard built on London Fire Brigade open data, applying the BCS Code of Conduct and IET Rules of Conduct as the professional reference frame. The emphasis is on the choices that keep the artefact within an exploratory, evidence-led academic scope.
+
+\subsection{Data Governance and Open-Data Licensing}
+
+The data-governance position rests on three points: licence terms of the inputs, absence of personally-identifiable information in the fields used, and provenance retention.
+
+\begin{itemize}
+    \item \textbf{Licensing of open-data inputs.} The LFB Incident Records and Mobilisation Records are released by London Fire Brigade via the London Datastore under the Open Government Licence; the ONS / GLA borough boundary layer is released under the same licence. The project's ingestion respects the redistribution constraints of those licences: raw inputs are excluded from the public repository and never redistributed, while the processed artefacts retain source filenames and SHA-256 hashes so the inputs can be re-acquired from the publisher's URL.
+    \item \textbf{Privacy posture: no PII exposed.} The dashboard's HTTP surface (\path{/api/borough_summary}, \path{/api/borough_boundaries}, \path{/api/station_footprints}, \path{/api/footprint_scenario}) returns only borough-level or station-level aggregates; the per-incident canonical table is never served, and the ~62\,\% of records for which LFB withholds precise coordinates on privacy grounds are honoured by aggregating only on the rounded 100\,m grid family for any spatially aggregated output (§3.3 / §5.3).
+    \item \textbf{Provenance retention as an LSEP measure, not just a build hygiene measure.} Every processed artefact carries a provenance JSON recording source SHA-256, build script, transformation list, and constants used. This supports professional accountability because a borough-level claim can be traced back to the open-data release and transformation steps behind it, rather than being treated as a detached dashboard number.
+\end{itemize}
+
+\subsection{Risks of Public Misinterpretation}
+
+The main public-risk question is what could go wrong if a user reads the dashboard as an operational dispatch-grade tool rather than an exploratory artefact. The §4 design and §5 implementation mitigate that risk through the following controls.
+
+The dashboard is therefore not presented as operational dispatch software, and public-wellbeing risk is managed by keeping disclaimers, denominators, and non-goal statements close to the visual evidence. Accessibility could be improved in a future iteration through colour-blind-safe palettes, fuller keyboard navigation, and plain-language uncertainty tooltips.
+
+\begin{itemize}
+    \item \textbf{Risk: dashboard mistaken for an operational dispatch / location-allocation system.} Mitigation: the §4.1 non-goals list rules out location-allocation optimisation, real-time dispatch support, and predictive forecasting; §4.5 explicitly frames the station-context layer as exploratory and \emph{not} a routing-grade dispatch model; §5.5 narrows the first-iteration artefact to an \emph{assignment-footprint proxy}; and the disclaimer payload of \path{/api/footprint_scenario} repeats the framing on every response so screenshots and copied JSON carry it.
+    \item \textbf{Risk: numeric headlines (32.4\% exceedance, 46.5\% false-alarm share, 37.9\% precise-coord coverage) read as point estimates rather than denominator-conditional summaries.} Mitigation: §1.4 states the denominator and the exclusions for each headline; §5.2 restates them in the data-quality memo; the dashboard tooltip now states that exceedance is among recorded first-pump times; and the second-iteration §4.4 contract moves further toward natural-frequency phrasing after Padilla et al.\ \cite{padilla2018}. Hullman et al.\ \cite{hullman2015hops} provide the controlled-experiment evidence that static range encodings systematically mislead non-expert readers, which justifies the planned dotplot upgrade.
+    \item \textbf{Risk: exposed software surface creates avoidable security expectations.} Mitigation: the implemented surface is read-only and \texttt{GET}-only over non-personal aggregates; \S5.3 records the query-parameter allow-list and HTTP 400 rejection of unknown keys; no user content is persisted or reflected; no authentication is required because no non-public record is served; and dependencies are pinned for reproducible local validation.
+    \item \textbf{Risk: borough-level disparity reading interpreted as accusation rather than as an empirical observation.} Mitigation: §3.1 describes the borough as the LFB performance reporting boundary, not as a unit of fault; §6.1 reports uncertainty bands alongside the central tendency; and §7.3 frames the dashboard as deliberation support rather than a blame assignment.
+    \item \textbf{Risk: cross-boundary mobilisations silently inflate canonical-window claims.} Mitigation: the \path{matches_canonical_incident} flag is persisted on the mobilisation parquet, with the §5.2 join-quality memo documenting the matched-only / unmatched partition and the test suite recomputing the partition by \texttt{isin()} on every test run.
+    \item \textbf{Risk: reproducibility is achieved through wasteful infrastructure.} Mitigation: N2 keeps the artefact single-laptop runnable, with no GPU and no cloud service. Pre-aggregation reduces per-request compute from scanning 293{,}646 incident rows to a 2{,}574-row lookup, supporting the measured 1.1--17.7\,ms API timings; the unfiltered JSON payload is about 1\,MiB; and derived artefacts are rebuilt only when the open-data inputs refresh.
+\end{itemize}
+
+\subsection{Distributive Justice and Equity}
+
+Borough-level response comparisons also raise a distributive-justice question: how to surface disparity without implying that the dashboard has computed an automated optimum that should bypass deliberative process.
+
+\begin{itemize}
+    \item \textbf{Why surfacing borough-level disparity is itself an ethical choice.} Pereira et al.\ \cite{pereira2017equity} make the political-philosophy point complementary to the optimisation literature: an automated optimum can satisfy aggregate utility while violating distributive-justice constraints that only a deliberative process can specify. The dashboard's role is to surface the disparity so the deliberative process can engage with it, not to recommend a redistribution.
+    \item \textbf{Guard-rail: no relocation or closure recommendation in any artefact.} The §5.5 footprint scenario lets a user remove a station and observe the implied assignment shift; it does not rank scenarios, score them, or recommend any reconfiguration. The §4.1 non-goal against location-allocation optimisation is the upstream guard-rail.
+    \item \textbf{Guard-rail: deliberation-supporting framing in tooltip / disclaimer copy.} The disclaimer payload of \path{/api/footprint_scenario} explicitly names the artefact as exploratory; the dashboard tooltip now names the recorded-time denominator; and the second-iteration natural-frequency phrasing (after \cite{padilla2018}) is designed to make the verbal register still more deliberation-friendly.
+\end{itemize}
+
+\subsection{Professional Codes of Conduct}
+
+The relevant professional obligations are drawn from the BCS Code of Conduct (\url{https://www.bcs.org/membership/become-a-member/bcs-code-of-conduct/}) and IET Rules of Conduct (\url{https://www.theiet.org/about/governance/rules-of-conduct/}). They apply most directly to public interest, competence, duty to the relevant authority, duty to the profession, and confidentiality.
+
+\begin{itemize}
+    \item \textbf{Public interest and competence.} The project's restraint to exploratory framing rather than operational claims (§4.1 non-goals; §5.5 / §5.6 D1; the footprint disclaimer) is the operational form of the BCS clause requiring members to act in the public interest and only undertake work within their professional competence; making no dispatch-routing claim is a competence claim, not a humility claim.
+    \item \textbf{Duty to relevant authority.} The thesis keeps the implemented artefact within the approved academic scope: it reports open-data evidence, explains limitations, and avoids implying operational LFB endorsement or deployment readiness.
+    \item \textbf{Duty to the profession.} Reproducible scripts, provenance sidecars, API tests, and visible non-claims provide the professional record needed for independent scrutiny of the method. The same structure also makes future correction possible if an open-data schema or interpretation changes.
+    \item \textbf{Confidentiality and PII.} No participant's name, email, or other PII appears in any submitted artefact. Per-session facilitator notes were anonymised at source and used only to derive the aggregate findings reported in Table~\ref{tab:thinkaloud-summary}; the public repository therefore contains only non-identifying summaries and reusable evaluation instruments.
+\end{itemize}

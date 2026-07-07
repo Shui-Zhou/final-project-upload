@@ -1,0 +1,37 @@
+\section{Conclusion}
+
+This thesis set out to build an uncertainty-aware visual analytics dashboard over London Fire Brigade open data. The final artefact is not a dispatch, routing, forecasting, or station-relocation system. Its contribution is a reproducible evidence pipeline and linked-view dashboard that help a user compare demand, response-time performance, deployment context, and data-quality caveats without treating incomplete public data as operational ground truth.
+
+\subsection{Answers to the Research Questions}
+
+The primary research question asked how an uncertainty-aware visual analytics dashboard can support structured inspection of LFB incident demand and response performance. The answer is that the dashboard is most useful as a structured comparison surface: it places borough-level maps, monthly traces, response-time distributions, and ranked tabular values in one linked view, while the surrounding artefacts make the denominator and spatial caveats explicit. Its value comes from qualification as much as from visual discovery.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\textwidth}{p{1.1cm}X}
+\toprule
+Question & Answer \\
+\midrule
+RQ1 & The 2024--2026 incident records show substantial borough, incident-type, and time variation, with 32.4\% of recorded first-pump attendance times exceeding six minutes and false alarms forming the largest incident group at 46.5\%. The highest borough exceedance shares are concentrated in outer London, and the pattern remains stable when false alarms are excluded. \\
+RQ2 & The headline patterns require qualification. Mobilisation records support matched-only deployment claims over 438{,}211 rows; coordinate suppression limits street-level spatial claims; missing first-pump times define the response denominator; and the station-address recovery supports proximity context without becoming routing-grade coverage evidence. \\
+RQ3 & The implemented linked map, trend, distribution, and ranking views support a qualified comparison workflow, especially because the ranking table gives exact values beside the map and the tooltip now names the recorded-time denominator. The evaluation evidence demonstrates design readiness, traceability, and early task-based interpretability; broader participant testing would be needed to validate user effectiveness with confidence. \\
+\bottomrule
+\end{tabularx}
+\caption{Answers to the research questions.}
+\label{tab:conclusion-rq-answers}
+\end{table}
+
+\subsection{Contribution Statement}
+
+The project makes four bounded contributions. First, it provides a reproducible open-data pipeline for LFB incident records, borough summaries, mobilisation joins, footprint centroids, and public station-address proximity checks, with sidecar dictionaries and data-quality memos. Second, it implements a Flask/D3 linked-view dashboard for inspecting borough-level demand and response performance. Third, it records station-related uncertainty honestly: the assignment-footprint API remains a demand-footprint artefact, while the public address/postcode recovery adds report-side proximity evidence without claiming routing-grade coverage. Fourth, it supplies a task-based evaluation protocol and compact think-aloud summary for judging whether users make qualified comparisons from the dashboard.
+
+The deliberate non-claims are equally important. The project does not optimise station placement, recommend closures, forecast incidents, model road-network travel time, validate operational LFB decision-making, or prove usability at operational scale.
+
+\subsection{Future Work}
+
+The highest-value follow-up is to broaden the Strand 2/3 evaluation with more participants and domain-expert review. Additional socio-economic borough context, such as population density or deprivation indicators, could also be added as a future context layer once its interpretation is separated clearly from the present response-performance evidence. The second technical priority is front-end integration of the station-related caveat: either keep the footprint layer as a clearly labelled demand-footprint view, or expose the public station-address proximity layer separately, never as coverage. Further technical work includes fuller natural-frequency uncertainty wording, fuzziness/value encodings for lower-confidence spatial cells, a fuller quantile-dotplot distribution pane, and a routing-grade accessibility model only if road-network travel-time validation becomes available.
+
+\subsection{Lessons Learned}
+
+The main technical lesson is that artefact-first work pays off in a thesis setting: when every numerical statement points to a script, sidecar, figure, or test, the report can change research framing without having to rebuild the evidence chain from scratch. The main research-design lesson is that a valuable question is not the same as a larger implementation. The strongest version of this project is not "a dashboard with more features"; it is a dashboard that helps users make better qualified claims from imperfect public data. The main reporting lesson is that provenance and limitation statements are part of the contribution: they make the dashboard's claims easier to inspect and harder to over-read.

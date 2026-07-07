@@ -1,0 +1,34 @@
+{
+  "artefact": "lfb_borough_centroids_2024_2026",
+  "schema_version": "1.0",
+  "source": {
+    "filename": "lfb_canonical_2024_2026.parquet",
+    "relative_path": "data/processed/lfb_canonical_2024_2026.parquet",
+    "sha256": "cf5b70d3a8efcb40bec167adca04dad4a25e77020975cdbe1ab9420a32697af3",
+    "upstream_artefact": "lfb_canonical_2024_2026"
+  },
+  "build": {
+    "extracted_at_utc": "2026-05-01T14:15:38.408397+00:00",
+    "script": "src/data/build_borough_centroids.py",
+    "python_version": "3.12.13",
+    "pandas_version": "3.0.2",
+    "pyproj_version": "3.7.2"
+  },
+  "row_counts": {
+    "canonical_input": 293646,
+    "borough_output": 33
+  },
+  "method": [
+    "Group canonical by borough_canonical; take median (Easting_rounded, Northing_rounded) per group as the borough's incident centroid (OSGB36 metres).",
+    "Convert OSGB36 to WGS84 via pyproj for D3 consumption."
+  ],
+  "honesty_note": "Output is the centroid of where incidents happen in each borough, not the borough's geographic centroid. It is used only as the borough anchor in the §5.5 assignment-footprint proxy, where it is compared with station responsibility-footprint centroids derived from the same canonical incident table.",
+  "output_columns": [
+    "borough_canonical",
+    "incident_count",
+    "easting_centroid_m",
+    "northing_centroid_m",
+    "longitude",
+    "latitude"
+  ]
+}

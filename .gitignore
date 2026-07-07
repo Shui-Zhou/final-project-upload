@@ -1,0 +1,38 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local data inputs and large regenerated tables
+data/*.xlsx
+data/*.csv
+data/raw/
+data/processed/*.parquet
+data/processed/*.csv
+data/processed/*.feather
+data/processed/*.arrow
+
+# LaTeX build artefacts
+*.aux
+*.log
+*.blg
+*.bbl
+*.toc
+*.out
+*.idx
+*.ind
+*.ilg
+*.lof
+*.lot
+*.nlo
+*.glsdefs
+*.synctex.gz
+*.acn
+*.fdb_latexmk
+*.fls
+
+# Local/editor files
+.DS_Store
+__MACOSX/
+.vscode/

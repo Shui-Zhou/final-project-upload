@@ -1,0 +1,128 @@
+\section{Approach: Specification and Design}
+
+This chapter specifies \emph{what the dashboard is designed to do} and \emph{why these design choices have been selected}, in advance of \S5 (Implementation), which records \emph{how} the system is constructed.
+
+\subsection{Design Goals and Non-Goals}
+
+The design pursues three primary goals, each tied to the value-led questions of \S1.3:
+
+\begin{enumerate}
+    \item \textbf{Surface borough-level response-time disparity \emph{with uncertainty}}, so that a planner sees not only that borough $X$ has a longer median response time than borough $Y$, but also the dispersion within each borough, the incident mix, and the share of incidents whose response time was not recorded. (Serves RQ1--RQ3; encoded after \cite{hullman2015hops, maceachren2012, padilla2018} per \S4.4.)
+    \item \textbf{Provide station-related context without operational overclaiming}, so that assignment-footprint and public station-address proximity evidence can qualify borough comparisons without becoming a routing-grade coverage or relocation model. (Serves RQ2--RQ3; framed as visual-analytics context, not optimisation, per \S4.5 and \S5.6.)
+    \item \textbf{Expose mobilisation and historical context as qualifications}, so that incident-level response summaries can be checked against appliance-level deployment evidence and, where appropriate, interpreted against the 2014 closure cohort identified by \cite{spatial2015}. (Serves RQ2.)
+\end{enumerate}
+
+The design logic is evidence-led: each research question is tied to a concrete artefact or validation strand, so the report does not drift from available evidence into unsupported operational claims. RQ1 is supported mainly by the borough summary and linked dashboard; RQ2 by the mobilisation matched partition, data-quality sidecars, and station-address recovery; and RQ3 by the implemented linked-view workflow, heuristic walk-through, and prepared think-aloud/probe instruments. Figure~\ref{fig:project-evidence-map} summarises this chain and the headline values it carries.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    stage/.style={draw, rounded corners=1.5pt, align=center, text width=3.3cm, minimum height=2.9cm, font=\scriptsize, inner sep=4pt},
+    stat/.style={align=center, text width=3.3cm, font=\scriptsize, inner sep=2pt},
+    arr/.style={-{Stealth[length=2.0mm]}, line width=0.45pt},
+    node distance=5mm and 5mm
+]
+\node[stage, fill=blue!8, draw=blue!55!black] (p) {\textbf{Public data problem}\\[2pt] records whose denominators, suppressed coordinates, and station context need explicit handling};
+\node[stage, fill=green!8, draw=green!50!black, right=of p] (d) {\textbf{Design response}\\[2pt] uncertainty-aware linked views keep patterns and their caveats in the same view};
+\node[stage, fill=orange!9, draw=orange!65!black, right=of d] (i) {\textbf{Implementation artefact}\\[2pt] Python pipeline with provenance sidecars, Flask API, D3 linked dashboard};
+\node[stage, fill=violet!8, draw=violet!60!black, right=of i] (q) {\textbf{Qualified evidence}\\[2pt] exploratory response evidence; no routing, dispatch, forecasting, or relocation claims};
+\draw[arr] (p) -- (d);
+\draw[arr] (d) -- (i);
+\draw[arr] (i) -- (q);
+\node[stat, below=5mm of p] (s1) {{\large\bfseries 293{,}646}\\ incidents,\\ 2024-01 to 2026-02};
+\node[stat, below=5mm of d] (s2) {{\large\bfseries 37.9\,\%}\\ records with\\ precise coordinates};
+\node[stat, below=5mm of i] (s3) {{\large\bfseries 32.4\,\%}\\ recorded first-pump times\\ above six minutes};
+\node[stat, below=5mm of q] (s4) {{\large\bfseries 438{,}211}\\ mobilisation rows matched\\ to canonical incidents};
+\node[draw, rounded corners=1.5pt, fill=gray!8, align=center, text width=15.3cm, font=\scriptsize, inner sep=4pt, anchor=north west] at ([yshift=-4mm]s1.south west) (b) {\textbf{Boundary condition:} the artefact is an exploratory evidence surface; operational routing, live dispatch support, forecasting, and station relocation sit outside the validated scope.};
+\end{tikzpicture}}
+\caption{Project evidence map: from open-data problem to qualified visual-analytics evidence. Headline values restate the \S1.4 conventions; the boundary strip restates the \S4.1 non-goals.}
+\label{fig:project-evidence-map}
+\end{figure}
+
+The following are explicit \emph{non-goals}, each ruled out either because the data does not support it (\S3.1) or because the literature (\S2) shows it would mislead the intended user:
+
+\begin{itemize}
+    \item Location-allocation optimisation. The optimisation literature surveyed in \S2.5 produces black-box ``optimal layouts'' that LFB open data structurally cannot calibrate (no per-station capacity, no dispatch-rule metadata, no routing-graph travel times); see \S4.5.
+    \item Real-time dispatch support. The dataset is published with a multi-week lag and the project takes no operational responsibility for live response.
+    \item Predictive forecasting of incident counts. \cite{predictive2024} demonstrates that this is feasible at the right scale, but it is a separate research artefact and is left as future work (\S8.3).
+    \item Ingestion of social-media or user-generated content. Surveyed by \cite{imran2015, marbouti2016}, but explicitly out of the project's scope, which is restricted to structured incident records.
+\end{itemize}
+
+\subsubsection{User Scenarios}
+Three bounded user scenarios drive the requirements. A planning analyst compares boroughs before a review meeting and needs exact denominators after an initial map impression. A policy researcher checks whether a high-exceedance pattern persists after filtering by incident group, month, false-alarm workload, and coordinate coverage. A public-data reviewer tests whether station evidence supports a coverage claim, so the interface must separate assignment footprints from public station-address proximity. These scenarios motivate the linked map, trend, distribution, ranking table, and station-context caveat as one evidence workflow.
+
+\subsection{Requirements: Functional and Non-Functional}
+
+\subsubsection{Functional Requirements}
+Each requirement maps to one or more research questions of \S1.3:
+
+\begin{itemize}
+    \item \textbf{F1} (RQ1, RQ3). Render a borough-level choropleth of incident demand and first-pump response performance, with selectable filters for incident group, year, month, weekday, and hour of the day.
+    \item \textbf{F2} (RQ1, RQ3). Render a time-series panel of monthly first-pump response time, linked to the choropleth selection via brushing (Yi \emph{Connect}).
+    \item \textbf{F3} (RQ1--RQ3). Render a response-time \emph{distribution} panel for the current selection, so that variance and tail behaviour are visible alongside the central tendency.
+    \item \textbf{F4} (RQ2--RQ3). Provide station-related context through an assignment-footprint API and a public station-address proximity recovery layer. The implementation must keep these surfaces linguistically separate from routing-grade coverage or relocation evidence.
+    \item \textbf{F5} (RQ2--RQ3). Encode coordinate imputation status (precise per-incident versus rounded 100\,m grid, per \S3.3), missing response-time status, and mobilisation-match status wherever a panel or report-side claim aggregates affected records, after \cite{maceachren2012}.
+\end{itemize}
+
+\subsubsection{Non-Functional Requirements}
+
+\begin{itemize}
+    \item \textbf{N1 Open data only}. The system must run on LFB Incident Records, LFB Mobilisation Records, ONS borough boundaries, and public fire-station address/postcode data (\cite{lfb_incidents, lfb_mobilisations, ons_boundaries, lfb_stations, lfb_attendance}); no KCL Library credentials, no commercial APIs. (See \S5.6 D1: the first implementation derives station footprints from the canonical incident table, and the station-address recovery adds public-address postcode proximity without claiming routing-grade coverage.)
+    \item \textbf{N2 Single-laptop runnable}. Backend (Flask) and front-end (D3.js) must run on a 16\,GB MacBook without GPU, GIS server, or paid cloud service; the canonical parquet (\S5.2) is sized so that the entire backing store loads in memory.
+    \item \textbf{N3 Browser-rendered}. The user-facing artefact is a web page reachable from any modern desktop browser; no installation, no plugin, no operating-system dependency.
+    \item \textbf{N4 Reproducible builds}. Every numeric claim in the report must trace to a script under \texttt{src/} or a notebook under \texttt{notebooks/}, and every artefact in \texttt{data/processed/} must carry a provenance JSON sidecar (see \S5.2).
+    \item \textbf{N5 Accessible to a non-expert audience}. Following Padilla et al.~\cite{padilla2018}, tooltip and legend wording should make denominator-conditional values readable without specialist knowledge. The first iteration now states that exceedance percentages are among recorded first-pump times; the second iteration should move further toward natural-frequency phrasing (``out of every 100 incidents with a recorded time, $X$ exceed six minutes'') so low-numeracy readers can interpret without working-memory cost.
+    \item \textbf{N6 Auditable evaluation}. Evaluation activities (\S4.6) must record their participant demographics, task scripts, and observed responses in a form that an external reviewer can reconstruct from the repository.
+\end{itemize}
+
+\subsection{Architecture: Three-Pane Linked View}
+
+The architecture is a three-pane linked view served from a single Flask process: a borough \emph{map} pane, a temporal \emph{trend} pane, and a response-time \emph{distribution} pane, with a borough ranking table beneath. The three-pane decomposition inherits from the deployed PanViz~2.0 layout~\cite{panviz2020} (parameter control / spatial choropleth / temporal trend), with two adaptations forced by the LFB context: (i) the geographic granularity moves from US county to London borough, and the temporal granularity from epidemic-day to incident-month; (ii) the front-end stack moves from React to D3.js~\cite{bostock2011, heer2010}, chosen for the data-to-DOM binding that makes the linked-view brushing pattern explicit in the source rather than hidden inside a virtual-DOM diff.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/early_context/fig_linked_view_wireframe.png}
+\caption{Linked-view dashboard structure. The schematic shows how the filter state and borough selection propagate through the map, monthly trend, response distribution, and ranking-table panels.}
+\label{fig:linked-view-wireframe}
+\end{figure}
+
+The backend / front-end split follows from N1--N3 of \S4.2: an open-data, single-laptop, browser-rendered system rules out a separate compute server, but a pure-static deployment would have to ship the canonical 66\,MB Excel (or its $\geq$\,40\,MB parquet derivative) to every browser. The adopted hybrid architecture utilizes a Flask process that loads the borough summary parquet once at startup and serves either pre-aggregated JSON or filter-narrowed slices over the same \path{/api/borough_summary} endpoint; the same Flask process serves the D3 dashboard's static assets and the borough-boundary GeoJSON from the same origin, which removes the need for cross-origin headers and makes the system executable via a single autonomous Flask instance. The first-iteration front-end issues a single unfiltered fetch at startup ($\approx$\,1.0\,MiB JSON, the full 2{,}574-row aggregate) and applies further filters client-side; an explicit borough-only filter would return $\approx$\,31\,KiB. The endpoint supports both patterns so a future front-end iteration can switch to per-state-change fetches without an API change. The per-incident canonical table is never exposed through the HTTP surface --- only aggregations by borough, month, and incident group from \S5.2 leave the backend --- which is both a privacy posture (no precise coordinates over the wire) and a payload-size posture (1\,MiB aggregate JSON, against $\geq$\,40\,MB if the canonical were served whole).
+
+Commercial BI platforms such as Tableau, Power BI, and ArcGIS Online were considered as cheaper implementation paths but rejected for this artefact. The core research object is the uncertainty contract itself: denominator-qualified tooltips, per-cell coordinate-coverage fields, and disclaimer payloads embedded in API responses need to behave as first-class interaction and data-contract rules, not as styling notes attached to a workbook. N1--N3 also require an open-data, no-licence, single-laptop artefact that can be inspected without a paid desktop or hosted GIS workspace. N4 favours script-traceable rebuilds and sidecar provenance over opaque workbook state. Most importantly, a BI skin would hide the encoding-design layer that this project is evaluating: how linked views, tabular caveat exposure, and station-context wording shape qualified comparison.
+
+\subsection{Encoding Choices and Their Justification}
+
+Encoding choices follow the §3.2 working definitions, so each visual variable resolves to a single literature anchor rather than an ad hoc designer judgement. The borough-choropleth fill encodes the 6-minute exceedance share via a sequential RGB-basis interpolator (teal $\to$ amber $\to$ red), matching the \emph{semantic-colour} dashboard pattern reported as the second-most-common colour treatment in Bach et al.'s 144-dashboard corpus \cite{bach2023patterns} and the operational ``traffic-light'' convention familiar to fire-service stakeholders. The temporal trend pane renders incident count and exceedance share as two aligned traces sharing a common time axis, supporting the \emph{Connect} category of Yi et al.~\cite{yi2007} when a borough is selected on the map. The distribution pane, in its first iteration, renders median-to-p95 ranges with the 6-minute target marked as a dashed reference line; the second iteration replaces this with a full quantile-dotplot rendering after Hullman et al.'s controlled-experiment evidence~\cite{hullman2015hops} that static range encodings systematically mislead non-expert readers in probabilistic-comparison tasks.
+
+Uncertainty encoding is operationalised against the empirical visual-variable ranking of MacEachren et al.~\cite{maceachren2012}: the dashboard restricts itself to fuzziness, colour value, and tabular exposure, and explicitly avoids saturation (which the empirical study found to be \emph{not} intuitively read as uncertainty by GIScience-literate users despite its commonplace use). The first-iteration enactment of this contract is the ranking table's per-borough precise-coordinate-coverage column (the 37.9\% / 100\% split documented in \S3.3 surfaced as a tabular value, not silently hidden) and denominator-qualified hover text for exceedance share; the second iteration adds fuzziness on the map for cells with low precise-coordinate coverage, plus fuller natural-frequency tooltip phrasing after Padilla et al.~\cite{padilla2018}.
+
+\subsection{Station-Context Design and the Optimisation Boundary}
+
+The station-related layer is an \emph{exploratory context layer}, not a routing-grade dispatch model and not a location-allocation optimiser. The implementation deliberately separates two kinds of evidence: the assignment-footprint proxy of \S5.5, derived from historical incident responsibility patterns, and the public station-address postcode proximity recovery of \S5.6 D1. Neither is a road-network coverage surface. This boundary follows the optimisation literature: the Maximal Covering Location Problem lineage from Church and ReVelle~\cite{church1974} through contemporary surveys and applications \cite{goldberg2004, reconfig2023, beijing2021, ocmola2018} requires per-station capacity, dispatch rules, and travel-time calibration that LFB open data does not expose. Producing an ``optimal layout'' here would therefore be an unsupported policy recommendation. The project instead uses straight-line distance only as a transparent proximity cue, and treats any routing-grade accessibility or relocation recommendation as future work requiring separate validation. Figure~\ref{fig:station-evidence-boundary} draws the resulting claim boundary explicitly.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    ebox/.style={draw, rounded corners=1.5pt, align=center, text width=3.6cm, font=\scriptsize, inner sep=4pt},
+    arr/.style={-{Stealth[length=2.0mm]}, line width=0.45pt}
+]
+\node[ebox, fill=green!8, draw=green!50!black] (fp) at (0,0) {\textbf{Assignment footprint}\\[2pt] historical incident responsibility derived from \texttt{IncidentStationGround}; not a building location};
+\node[ebox, fill=blue!8, draw=blue!55!black] (pa) at (0,-2.9) {\textbf{Public station address}\\[2pt] postcode-geocoded address point; an approximate proximity cue, not a route node};
+\node[ebox, fill=orange!9, draw=orange!65!black, text width=4.0cm] (cmp) at (5.9,-1.45) {\textbf{Supported comparison}\\[2pt] straight-line distances between footprint centroids, borough demand centroids, and public-address points, with caveats attached};
+\node[ebox, fill=red!8, draw=red!60!black] (nc) at (11.8,-1.45) {\textbf{Not claimed}\\[2pt] routing-grade coverage; dispatch recommendation; capacity modelling; station relocation};
+\draw[arr] (fp.east) .. controls +(right:9mm) and +(left:9mm) .. ([yshift=2.5mm]cmp.west);
+\draw[arr] (pa.east) .. controls +(right:9mm) and +(left:9mm) .. ([yshift=-2.5mm]cmp.west);
+\draw[arr, draw=orange!65!black] (cmp.east) -- (nc.west);
+\draw[red!70!black, dashed, line width=0.6pt] (9.15,1.1) -- (9.15,-4.2);
+\node[font=\scriptsize\bfseries, text=red!70!black] at (9.15,1.45) {claim boundary};
+\node[draw, rounded corners=1.5pt, fill=gray!8, align=center, text width=15.0cm, font=\scriptsize, inner sep=4pt, anchor=north] at (5.9,-4.7) (miss) {\textbf{Missing for an operational coverage model:} routing graph and travel times, station capacity, dispatch rules, live availability.};
+\end{tikzpicture}}
+\caption{Station-evidence claim boundary. Both station-related layers support straight-line context comparison only; the inputs an operational coverage model requires are absent from the open data, so no such claim is made.}
+\label{fig:station-evidence-boundary}
+\end{figure}
+
+\subsection{Evaluation Plan}
+
+Evaluation occupies the \emph{Evaluating User Experience (UE)} scenario of Lam et al.'s seven-scenario taxonomy~\cite{lam2011}, supplemented by light task-based elements where the research questions admit observable behaviour. The plan has three strands. Strand one is a heuristic walk-through using visualisation-adapted heuristics (cluster of \emph{exploration}, \emph{communication}, \emph{abstraction}, and \emph{cognitive fit} concerns from \S2.2 and \S2.3), feeding the readiness evidence in \S6. Strand two is a small-scale think-aloud protocol for three urban-data-domain participants. Strand three is an explicit uncertainty and overclaim probe: whether participants notice and act on coordinate, denominator, mobilisation, and station-footprint caveats, interpreted through Padilla et al.'s dual-process framework~\cite{padilla2018}. A controlled comparison against a static-baseline dashboard (the UP scenario in its full form) remains out of scope and is named as future work in \S8.3.

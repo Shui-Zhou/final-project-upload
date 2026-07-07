@@ -1,0 +1,42 @@
+{
+  "artefact": "lfb_published_station_locations_2026",
+  "schema_version": "1.0",
+  "source": {
+    "page": "https://data.london.gov.uk/dataset/low-carbon-generators-2jkzj",
+    "csv_url": "https://data.london.gov.uk/download/2jkzj/7f069dca-8c18-405a-9dc4-0d6f802d52a5/LFB%20low%20carbon%20generators%20at%20fire%20stations%20-%20June%202017.csv",
+    "raw_relative_path": "data/raw/LFB_low_carbon_generators_at_fire_stations_June_2017.csv",
+    "raw_sha256": "e37b82c8b37b68de13249cac29d56a276dc42cfb392719b1d6b6a2441572769c",
+    "licence": "Open Government Licence v2, per London Datastore page",
+    "source_limit": "The table is a low-carbon generators dataset that includes LFEPA/LFB fire-station addresses and postcodes. It is used as a public address list, not as a live operational station master list."
+  },
+  "geocoder": {
+    "service": "postcodes.io",
+    "method": "postcode centroid lookup; terminated_postcodes alternate lookup for retired postcodes",
+    "postcode_corrections": {
+      "Chelsea": "SW3 5UF",
+      "Deptford": "SE8 5DB",
+      "Lambeth": "SE1 7SP",
+      "Lambeth River": "SE1 7SP"
+    },
+    "station_name_corrections": {
+      "Eltam": "Eltham",
+      "Hornchuch": "Hornchurch",
+      "Northholt": "Northolt"
+    }
+  },
+  "build": {
+    "extracted_at_utc": "2026-07-06T05:40:01.703423+00:00",
+    "script": "src/data/build_published_station_proximity.py",
+    "python_version": "3.13.9",
+    "pandas_version": "2.3.3",
+    "pyproj_version": "3.7.2",
+    "requests_version": "2.32.5"
+  },
+  "row_counts": {
+    "published_station_rows": 104,
+    "unique_station_names": 104,
+    "live_postcodes": 103,
+    "terminated_postcodes": 1
+  },
+  "honesty_note": "Use as straight-line proximity/accessibility context only. Do not describe as coverage, routing-grade travel time, dispatch, relocation, or optimisation evidence."
+}

@@ -1,0 +1,50 @@
+{
+  "artefact": "lfb_borough_summary_2024_2026",
+  "schema_version": "1.0",
+  "source": {
+    "filename": "lfb_canonical_2024_2026.parquet",
+    "relative_path": "data/processed/lfb_canonical_2024_2026.parquet",
+    "sha256": "cf5b70d3a8efcb40bec167adca04dad4a25e77020975cdbe1ab9420a32697af3",
+    "upstream_artefact": "lfb_canonical_2024_2026"
+  },
+  "build": {
+    "extracted_at_utc": "2026-05-01T12:31:21.850727+00:00",
+    "script": "src/data/build_borough_summary.py",
+    "python_version": "3.12.13",
+    "pandas_version": "3.0.2"
+  },
+  "row_counts": {
+    "canonical_input": 293646,
+    "summary_output": 2574
+  },
+  "group_keys": [
+    "borough_canonical",
+    "year_month",
+    "IncidentGroup"
+  ],
+  "aggregations": [
+    "incident_count = size of group",
+    "response_time_min_{mean,median,p90,p95} over response_time_minutes",
+    "response_time_recorded_share = share of group with non-null response_time_seconds",
+    "exceeds_six_min_share = mean of exceeds_six_min_target boolean",
+    "num_pumps_mean = mean NumPumpsAttending",
+    "coord_precise_share, coord_rounded_share = mean of the two coord-validity booleans",
+    "distinct_ground_stations = nunique IncidentStationGround in group"
+  ],
+  "output_columns": [
+    "borough_canonical",
+    "year_month",
+    "IncidentGroup",
+    "incident_count",
+    "response_time_min_mean",
+    "response_time_min_median",
+    "response_time_min_p90",
+    "response_time_min_p95",
+    "response_time_recorded_share",
+    "exceeds_six_min_share",
+    "num_pumps_mean",
+    "coord_precise_share",
+    "coord_rounded_share",
+    "distinct_ground_stations"
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "borough_ranking": {
+    "bottom_borough": "Kensington And Chelsea",
+    "bottom_borough_exceedance_share": 0.17859445519019987,
+    "overall_exceedance_share": 0.3243770267504121,
+    "top_borough": "Hillingdon",
+    "top_borough_exceedance_share": 0.5219351291918637
+  },
+  "coordinate_coverage": {
+    "highest_precise_coverage_borough": "City Of London",
+    "highest_precise_coverage_share": 0.8602287166454892,
+    "lowest_precise_coverage_borough": "Hackney",
+    "lowest_precise_coverage_share": 0.2630527321692294,
+    "overall_precise_coordinate_share": 0.3792405787623641
+  },
+  "coordinate_uncertainty_implications": {
+    "borough_precise_coverage_max": 0.8602287166454892,
+    "borough_precise_coverage_min": 0.2630527321692294,
+    "precise_coordinate_share": 0.3792405787623641,
+    "rounded_coordinate_valid_share": 1.0,
+    "suppressed_precise_coordinate_share": 0.6207594212376359
+  },
+  "false_alarm_sensitivity": {
+    "largest_rank_shift_excluding_false_alarms_borough": "Harrow",
+    "largest_rank_shift_excluding_false_alarms_places": 3.0,
+    "spearman_all_vs_excluding_false_alarms": 0.9909759358288771,
+    "spearman_all_vs_fire_only": 0.9699197860962567
+  },
+  "incident_group_distribution": {
+    "incident_group_response_minutes": {
+      "False Alarm": {
+        "median": 4.933333333333334,
+        "p90": 7.8,
+        "p95": 9.033333333333333
+      },
+      "Fire": {
+        "median": 5.25,
+        "p90": 8.516666666666667,
+        "p95": 10.033333333333333
+      },
+      "Special Service": {
+        "median": 5.316666666666666,
+        "p90": 8.466666666666667,
+        "p95": 9.85
+      }
+    }
+  },
+  "linked_view_wireframe": {
+    "components": [
+      "filter_bar",
+      "borough_map",
+      "monthly_trend",
+      "response_distribution",
+      "ranking_table",
+      "shared_state",
+      "flask_api"
+    ]
+  },
+  "motivation_map": {
+    "boundary_join_missing": [],
+    "overall_recorded_time_exceedance_share": 0.3243770267504121,
+    "top_three_boroughs": [
+      {
+        "borough": "Hillingdon",
+        "exceedance_share": 0.5219351291918637,
+        "incident_count": 9095
+      },
+      {
+        "borough": "Bromley",
+        "exceedance_share": 0.4755431484403447,
+        "incident_count": 8239
+      },
+      {
+        "borough": "Richmond upon Thames",
+        "exceedance_share": 0.45208382387567697,
+        "incident_count": 4247
+      }
+    ]
+  },
+  "precise_spatial_density": {
+    "precise_spatial_density_rows": 111342,
+    "precise_spatial_density_share": 0.3792405787623641
+  },
+  "row_count_main_incident_groups": 293592,
+  "source": "data/processed/lfb_canonical_2024_2026.parquet",
+  "system_architecture_overview": {
+    "components": [
+      "open_data",
+      "python_build_scripts",
+      "processed_artefacts",
+      "flask_api",
+      "d3_dashboard",
+      "report_figures",
+      "pytest_harness",
+      "final_report"
+    ]
+  },
+  "temporal_density": {
+    "temporal_peak_cells": {
+      "False Alarm": {
+        "hour_of_day": 11,
+        "incident_count": 1198,
+        "weekday": "Wednesday"
+      },
+      "Fire": {
+        "hour_of_day": 19,
+        "incident_count": 413,
+        "weekday": "Saturday"
+      },
+      "Special Service": {
+        "hour_of_day": 19,
+        "incident_count": 1106,
+        "weekday": "Tuesday"
+      }
+    }
+  }
+}

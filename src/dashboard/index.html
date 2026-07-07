@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LFB Response Atlas</title>
+    <link rel="stylesheet" href="/dashboard/styles.css" />
+  </head>
+  <body>
+    <header class="app-bar">
+      <div>
+        <h1>LFB Response Atlas</h1>
+        <p>London borough response performance, Jan 2024-Feb 2026</p>
+      </div>
+      <form class="controls" aria-label="Dashboard filters">
+        <label>
+          <span>Borough</span>
+          <select id="borough-select"></select>
+        </label>
+        <label>
+          <span>Month</span>
+          <select id="month-select"></select>
+        </label>
+        <label>
+          <span>Incident group</span>
+          <select id="group-select"></select>
+        </label>
+      </form>
+    </header>
+
+    <main class="dashboard-shell">
+      <section class="map-panel" aria-labelledby="map-title">
+        <div class="panel-heading">
+          <div>
+            <h2 id="map-title">Borough Choropleth</h2>
+            <p id="selection-summary"></p>
+          </div>
+          <div class="metric-strip">
+            <div>
+              <span id="metric-incidents">-</span>
+              <small>incidents</small>
+            </div>
+            <div>
+              <span id="metric-median">-</span>
+              <small>median min</small>
+            </div>
+            <div>
+              <span id="metric-exceed">-</span>
+              <small>over 6 min</small>
+            </div>
+          </div>
+        </div>
+        <p id="empty-state" class="empty-state" hidden>
+          No data for the selected borough &middot; month &middot; incident-group combination. Adjust the filters to a populated cell.
+        </p>
+        <div class="map-wrap">
+          <svg id="borough-map" role="img" aria-label="London borough response-time choropleth"></svg>
+          <div id="tooltip" class="tooltip" hidden></div>
+        </div>
+        <div class="legend" id="map-legend"></div>
+      </section>
+
+      <section class="side-panel timeline-panel" aria-labelledby="timeline-title">
+        <h2 id="timeline-title">Monthly Trend</h2>
+        <svg id="trend-chart" role="img" aria-label="Monthly incident and response trend"></svg>
+      </section>
+
+      <section class="side-panel distribution-panel" aria-labelledby="distribution-title">
+        <h2 id="distribution-title">Response Distribution</h2>
+        <svg id="distribution-chart" role="img" aria-label="Response time percentiles by incident group"></svg>
+      </section>
+
+      <section class="table-panel" aria-labelledby="table-title">
+        <div class="panel-heading compact">
+          <h2 id="table-title">Borough Ranking</h2>
+          <p>Sorted by six-minute exceedance share</p>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Borough</th>
+                <th>Incidents</th>
+                <th>Median</th>
+                <th>P90</th>
+                <th>Over 6 min</th>
+                <th>Precise coords</th>
+              </tr>
+            </thead>
+            <tbody id="ranking-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+    <script type="module" src="/dashboard/dashboard.js"></script>
+  </body>
+</html>

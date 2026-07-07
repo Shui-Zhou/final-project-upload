@@ -1,0 +1,12 @@
+flask
+matplotlib
+numpy
+openpyxl
+pandas
+pyarrow
+pyproj
+pytest
+requests
+# dev/eval tooling only (dashboard figure capture + browser verification);
+# requires a one-off `playwright install chromium` after pip install
+playwright

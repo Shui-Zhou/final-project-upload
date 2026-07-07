@@ -1,0 +1,93 @@
+{
+  "artefact": "lfb_canonical_2024_2026",
+  "schema_version": "1.0",
+  "source": {
+    "filename": "LFB_Incident_2024_onwards.xlsx",
+    "relative_path": "data/LFB_Incident_2024_onwards.xlsx",
+    "sha256": "19aa1ee359fb7925f3fe2f8823de5b4fdc2bab16e3ef4af44e30d1d9f275b7a8",
+    "publisher": "London Fire Brigade via London Datastore",
+    "publisher_url": "https://data.london.gov.uk/dataset/london-fire-brigade-incident-records"
+  },
+  "build": {
+    "extracted_at_utc": "2026-05-01T12:30:57.144567+00:00",
+    "script": "src/data/build_canonical.py",
+    "python_version": "3.12.13",
+    "pandas_version": "3.0.2"
+  },
+  "row_counts": {
+    "input": 293646,
+    "output": 293646,
+    "dropped": 0
+  },
+  "transformations_applied": [
+    "DateOfCall parsed to datetime (errors='coerce')",
+    "Derived: hour_of_day from TimeOfCall",
+    "Derived: year_month, day_of_week, weekday_name, is_weekend",
+    "Derived: response_time_seconds (alias) + response_time_minutes",
+    "Derived: exceeds_six_min_target = response_time_seconds > 360 (nullable boolean: pd.NA where response_time_seconds is NaN, so downstream mean() correctly skips missing-time rows)",
+    "Derived: coord_precise_valid = Easting_m + Northing_m both within Greater London bbox (precise per-incident, ~37.9%)",
+    "Derived: coord_rounded_valid = Easting_rounded + Northing_rounded both within Greater London bbox (100m grid, ~100%)",
+    "Derived: borough_canonical = IncGeo_BoroughName trimmed + title-cased"
+  ],
+  "constants": {
+    "first_pump_target_seconds": 360,
+    "greater_london_bbox_osgb36": {
+      "easting_min": 500000,
+      "easting_max": 565000,
+      "northing_min": 155000,
+      "northing_max": 210000
+    }
+  },
+  "output_columns": [
+    "IncidentNumber",
+    "DateOfCall",
+    "CalYear",
+    "TimeOfCall",
+    "HourOfCall",
+    "IncidentGroup",
+    "StopCodeDescription",
+    "SpecialServiceType",
+    "PropertyCategory",
+    "PropertyType",
+    "AddressQualifier",
+    "Postcode_full",
+    "Postcode_district",
+    "UPRN",
+    "USRN",
+    "IncGeo_BoroughCode",
+    "IncGeo_BoroughName",
+    "ProperCase",
+    "IncGeo_WardCode",
+    "IncGeo_WardName",
+    "IncGeo_WardNameNew",
+    "Easting_m",
+    "Northing_m",
+    "Easting_rounded",
+    "Northing_rounded",
+    "Latitude",
+    "Longitude",
+    "FRS",
+    "IncidentStationGround",
+    "FirstPumpArriving_AttendanceTime",
+    "FirstPumpArriving_DeployedFromStation",
+    "SecondPumpArriving_AttendanceTime",
+    "SecondPumpArriving_DeployedFromStation",
+    "NumStationsWithPumpsAttending",
+    "NumPumpsAttending",
+    "PumpCount",
+    "PumpMinutesRounded",
+    "Notional Cost (£)",
+    "NumCalls",
+    "hour_of_day",
+    "year_month",
+    "day_of_week",
+    "weekday_name",
+    "is_weekend",
+    "response_time_seconds",
+    "response_time_minutes",
+    "exceeds_six_min_target",
+    "coord_precise_valid",
+    "coord_rounded_valid",
+    "borough_canonical"
+  ]
+}

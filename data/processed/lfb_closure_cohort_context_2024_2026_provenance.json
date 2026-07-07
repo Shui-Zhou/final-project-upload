@@ -1,0 +1,102 @@
+{
+  "artefact": "lfb_closure_cohort_context_2024_2026",
+  "schema_version": "1.0",
+  "source": {
+    "canonical_relative_path": "data/processed/lfb_canonical_2024_2026.parquet",
+    "literature_anchor": "Taylor (2015) spatial survival analysis, project.bib key spatial2015"
+  },
+  "mapping_review_gate": "REVIEW-GATE: verify station-to-borough mapping against Taylor (2015)/LFB LSP5 before prose is final.",
+  "closure_station_borough_mapping": [
+    {
+      "station": "Belsize",
+      "borough_canonical": "Camden",
+      "taylor_status": "affected"
+    },
+    {
+      "station": "Downham",
+      "borough_canonical": "Lewisham",
+      "taylor_status": "affected"
+    },
+    {
+      "station": "Kingsland",
+      "borough_canonical": "Hackney",
+      "taylor_status": "affected"
+    },
+    {
+      "station": "Knightsbridge",
+      "borough_canonical": "Westminster",
+      "taylor_status": "affected"
+    },
+    {
+      "station": "Silvertown",
+      "borough_canonical": "Newham",
+      "taylor_status": "affected"
+    },
+    {
+      "station": "Southwark",
+      "borough_canonical": "Southwark",
+      "taylor_status": "affected"
+    },
+    {
+      "station": "Westminster",
+      "borough_canonical": "Westminster",
+      "taylor_status": "affected"
+    },
+    {
+      "station": "Woolwich",
+      "borough_canonical": "Greenwich",
+      "taylor_status": "affected"
+    },
+    {
+      "station": "Bow",
+      "borough_canonical": "Tower Hamlets",
+      "taylor_status": "unaffected"
+    },
+    {
+      "station": "Clerkenwell",
+      "borough_canonical": "Islington",
+      "taylor_status": "unaffected"
+    }
+  ],
+  "filters": {
+    "incident_groups": [
+      "False Alarm",
+      "Fire",
+      "Special Service"
+    ],
+    "response_time": "non-null FirstPumpArriving_AttendanceTime only"
+  },
+  "build": {
+    "extracted_at_utc": "2026-07-07T11:49:36.951510+00:00",
+    "script": "src/data/build_closure_cohort_context.py",
+    "python_version": "3.13.9",
+    "pandas_version": "2.3.3"
+  },
+  "row_counts": {
+    "borough_rows": 33,
+    "closure_station_rows": 10,
+    "affected_station_rows": 8,
+    "unaffected_station_rows": 2
+  },
+  "summary_by_cohort": {
+    "Other borough": {
+      "borough_count": 24,
+      "mean_recorded_time_exceedance_share": 0.3601112216336428,
+      "median_recorded_time_exceedance_share": 0.38751507654736966,
+      "recorded_time_incidents": 176123
+    },
+    "Taylor affected-closure borough": {
+      "borough_count": 7,
+      "mean_recorded_time_exceedance_share": 0.28778955717872506,
+      "median_recorded_time_exceedance_share": 0.27837494710114263,
+      "recorded_time_incidents": 81261
+    },
+    "Taylor unaffected-closure borough": {
+      "borough_count": 2,
+      "mean_recorded_time_exceedance_share": 0.22755313926280402,
+      "median_recorded_time_exceedance_share": 0.22755313926280402,
+      "recorded_time_incidents": 21079
+    }
+  },
+  "honesty_note": "Descriptive borough-level context only. Do not read as causal closure evidence, coverage evidence, relocation evidence, or a replication of Taylor's 500 m dwelling-fire model."
+}
