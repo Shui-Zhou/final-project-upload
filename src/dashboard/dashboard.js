@@ -44,6 +44,16 @@ function fmtPct(value) {
   return value == null || Number.isNaN(value) ? "-" : d3.format(".0%")(value);
 }
 
+function fmtCI(row) {
+  if (
+    row?.exceeds_six_min_ci95_low == null ||
+    row?.exceeds_six_min_ci95_high == null
+  ) {
+    return "-";
+  }
+  return `${fmtPct(row.exceeds_six_min_ci95_low)}–${fmtPct(row.exceeds_six_min_ci95_high)}`;
+}
+
 function selectedRows() {
   return state.rows.filter(
     (row) => row.year_month === state.month && row.IncidentGroup === state.group,
@@ -103,7 +113,8 @@ function fillSelect(select, values, selected) {
 
 function renderSummary() {
   const row = rowForSelection();
-  els.summary.textContent = `${state.borough} · ${state.month} · ${state.group}`;
+  const partial = row?.is_partial_month ? " · partial month through 27 Feb" : "";
+  els.summary.textContent = `${state.borough} · ${state.month} · ${state.group}${partial}`;
   els.incidents.textContent = row ? fmtInt(row.incident_count) : "-";
   els.median.textContent = row ? fmtMin(row.response_time_min_median) : "-";
   els.exceed.textContent = row ? fmtPct(row.exceeds_six_min_share) : "-";
@@ -172,7 +183,7 @@ function renderMap() {
     <span>${fmtPct(min)}</span>
     <span class="legend-swatch" aria-hidden="true"></span>
     <span>${fmtPct(max)}</span>
-    <span>share over six minutes</span>
+    <span>author-derived share over six minutes</span>
   `;
 }
 
@@ -182,8 +193,10 @@ function showTooltip(event, name, row) {
     ? `<strong>${name}</strong>
        ${fmtInt(row.incident_count)} incidents<br>
        Median ${fmtMin(row.response_time_min_median)} min · P90 ${fmtMin(row.response_time_min_p90)} min<br>
-       ${fmtPct(row.exceeds_six_min_share)} over six minutes among recorded first-pump times<br>
-       ${fmtPct(row.coord_precise_share)} precise-coordinate coverage`
+       ${fmtPct(row.exceeds_six_min_share)} over six minutes among ${fmtInt(row.response_time_recorded_count)} recorded first-pump times<br>
+       95% Wilson interval ${fmtCI(row)}${row.small_sample_warning ? " · small sample" : ""}${
+         row.is_partial_month ? "<br>Partial month through 27 Feb 2026" : ""
+       }`
     : `<strong>${name}</strong>No selected-cell incidents`;
   const rect = event.currentTarget.ownerSVGElement.getBoundingClientRect();
   els.tooltip.style.left = `${event.clientX - rect.left + 14}px`;
@@ -280,6 +293,25 @@ function renderTrend() {
     .attr("y", 12)
     .attr("fill", "var(--amber)")
     .text("Over 6 min");
+
+  const partial = data.find((row) => row.is_partial_month);
+  if (partial) {
+    els.trend
+      .append("line")
+      .attr("x1", x(partial.year_month))
+      .attr("x2", x(partial.year_month))
+      .attr("y1", margin.top)
+      .attr("y2", height - margin.bottom)
+      .attr("stroke", "var(--muted)")
+      .attr("stroke-dasharray", "2 3");
+    els.trend
+      .append("text")
+      .attr("class", "chart-label")
+      .attr("x", x(partial.year_month) - 5)
+      .attr("y", height - margin.bottom - 6)
+      .attr("text-anchor", "end")
+      .text("partial");
+  }
 }
 
 function renderDistribution() {
@@ -356,7 +388,7 @@ function renderDistribution() {
     .attr("class", "chart-label")
     .attr("x", x(6) + 6)
     .attr("y", margin.top - 11)
-    .text("6 min");
+    .text("6 min reference");
 }
 
 function renderTable() {
@@ -373,8 +405,9 @@ function renderTable() {
         <td>${fmtInt(row.incident_count)}</td>
         <td>${fmtMin(row.response_time_min_median)} min</td>
         <td>${fmtMin(row.response_time_min_p90)} min</td>
+        <td>${fmtInt(row.response_time_recorded_count)}${row.small_sample_warning ? "†" : ""}</td>
         <td>${fmtPct(row.exceeds_six_min_share)}</td>
-        <td>${fmtPct(row.coord_precise_share)}</td>
+        <td>${fmtCI(row)}</td>
       `;
       tr.addEventListener("click", () => {
         state.borough = row.borough_canonical;

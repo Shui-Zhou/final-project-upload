@@ -1,23 +1,20 @@
 """
 Build station responsibility-footprint proxy from the canonical LFB incidents parquet.
 
-LFB does publish a `lfb_stations` open dataset on the London Datastore. Until
-that release is integrated, this script derives a narrower *assignment-
-footprint* proxy from the incident-resolution canonical dataset: for each unique value of
+This script derives an *assignment-footprint* proxy from the incident-resolution
+canonical dataset: for each unique value of
 `IncidentStationGround` it takes the median (Easting_rounded, Northing_rounded)
 of all incidents the station was the ground responsibility for, and converts
 the OSGB36 metres into WGS84 latitude / longitude for the front end.
 
-The derivation is honest about provenance: this is the centroid of where the
-station's responsibility footprint sits, not the location of the brick-and-
-mortar fire station building itself. It is suitable only for the §5.5
+The output is the centroid of the incidents assigned to each label, not the
+fire-station building. It is used only for the §5.5
 assignment-footprint scenario ("how do borough incident centroids relate to
 historic station responsibility footprints if a named footprint is removed?").
-It is not a station-coverage, routing, or relocation model; the recovery path
-for those claims is to integrate the published station-locations release.
-Bispo et al.'s r = 0.96 Euclidean vs road-network distance result
-\\cite{reconfig2023} is used only to justify straight-line distances within
-this explicitly bounded footprint proxy.
+The historical address file used elsewhere in the project does not turn this
+artefact into a current station register. Bispo et al.'s r = 0.96 Euclidean
+versus road-network distance result \\cite{reconfig2023} provides limited
+methodological precedent for the transparent straight-line calculation.
 
 Input:  data/processed/lfb_canonical_2024_2026.parquet
 Output: data/processed/lfb_station_locations_2024_2026.parquet
@@ -147,7 +144,7 @@ def write_provenance(
 
 def write_dictionary(locations: pd.DataFrame) -> None:
     notes = {
-        "station_name": "Distinct value of IncidentStationGround from the canonical LFB dataset (102 stations in the 2024-2026 slice).",
+        "station_name": "Distinct IncidentStationGround assignment-area label in the canonical slice; not a verified operating-station register.",
         "incident_count": "Number of incidents the station was ground responsibility for in the slice; used as a station-size context value.",
         "easting_centroid_m": "Median Easting_rounded of the station's incidents (OSGB36, metres).",
         "northing_centroid_m": "Median Northing_rounded of the station's incidents (OSGB36, metres).",
@@ -180,9 +177,9 @@ def write_dictionary(locations: pd.DataFrame) -> None:
 def validation_checks(locations: pd.DataFrame) -> None:
     print("Running validation checks ...", flush=True)
 
-    # 1. 102 unique stations as recorded in the canonical (the 2024-2026 slice).
+    # 1. 102 unique IncidentStationGround labels in the canonical slice.
     assert len(locations) == 102, (
-        f"expected 102 stations, got {len(locations)}; canonical schema may have changed"
+        f"expected 102 IncidentStationGround labels, got {len(locations)}; canonical schema may have changed"
     )
 
     # 2. Required columns present.

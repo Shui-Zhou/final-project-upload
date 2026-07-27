@@ -14,7 +14,7 @@
 - **Records with precise per-incident coordinates** (`Easting_m` / `Northing_m`, used for kernel-density mapping): 37.9\%. The remaining ~62\% have these fields withheld by LFB for privacy.
 - **Records with rounded 100\,m-grid coordinates** (`Easting_rounded` / `Northing_rounded`, used for borough- or grid-level aggregation): 100.0\%.
 - **Records with a recorded first-pump attendance time**: 94.8\%.
-- **First-pump time exceeds the 6-minute target** (among records with a recorded time): 32.4\%.
+- **Author-derived share above 360 seconds** (among records with a recorded time; not an official per-incident failure rate): 32.4\%.
 
 ## Incident-group composition
 
@@ -34,7 +34,7 @@
 
 ## Known limitations to surface in the dashboard
 
-1. **Two coordinate families exist and must not be conflated.** `Easting_m` / `Northing_m` (precise) is withheld for ~62\% of records on privacy grounds; `Easting_rounded` / `Northing_rounded` (100\,m grid) is released for ~100\%. Borough- and ward-level analysis can use the rounded family without bias; kernel-density and street-level mapping must use the precise family and acknowledge the 62\% gap as missing-not-at-random (incidents in dense central areas, where individuals are more identifiable, are more likely to have their precise coordinates suppressed).
+1. **Two coordinate families exist and must not be conflated.** Precise coordinates are unavailable for about 62\% of rows and may be systematically missing. Rounded coordinates are nearly complete but introduce displacement and are not assumed bias-free. Borough summaries use the published borough field directly; coordinate limitations apply to point/grid analysis.
 2. **Response time recorded in seconds despite the column name not stating units**. The canonical adds `response_time_seconds` and `response_time_minutes` to remove ambiguity in downstream code.
 3. **2014 closure cohort cannot be directly cross-checked from this slice** because the time window (2024--2026) is entirely post-closure. Comparison to Taylor's pre/post-closure modelling (\S2.4) is therefore qualitative; cross-check against the borough-level effect direction, not the absolute level.
 4. **NumPumpsAttending is per-incident**, not per-mobilisation. Multi-mobilisation analyses (e.g.\ how many pumps were eventually deployed for a sustained fire) require joining the LFB Mobilisation Records dataset, which is out of scope for this canonical.

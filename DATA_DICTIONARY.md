@@ -19,6 +19,7 @@
 - Dictionary: `data/processed/lfb_borough_summary_2024_2026_dictionary.md`
 - Provenance: `data/processed/lfb_borough_summary_2024_2026_provenance.json`
 - Key grain: borough x year-month x incident group.
+- Proportion fields: `exceeds_six_min_share` is an author-derived incident-level diagnostic among recorded first-pump times. The table carries exact recorded/exceedance counts, a two-sided 95% Wilson interval, a descriptive `recorded n < 30` warning, and an `is_partial_month` flag.
 
 ## Mobilisation Artefact
 
@@ -40,7 +41,7 @@
 - Borough-centroid script: `src/data/build_borough_centroids.py`
 - Borough-centroid dictionary: `data/processed/lfb_borough_centroids_2024_2026_dictionary.md`
 - Borough-centroid provenance: `data/processed/lfb_borough_centroids_2024_2026_provenance.json`
-- Key warning: these are incident-derived assignment footprints, not published station building coordinates.
+- Key warning: the 102 rows are distinct `IncidentStationGround` assignment-area labels in the canonical slice. They are incident-derived footprints, not a verified operating-station count or published station building coordinates.
 
 ## Published Station Proximity Artefacts (D1 Recovery)
 
@@ -54,7 +55,7 @@
 - Station D1 comparison: `data/processed/lfb_station_d1_comparison_2024_2026_dictionary.md`, `data/processed/lfb_station_d1_comparison_2024_2026_dq_memo.md`
 - Borough proximity summary: `data/processed/lfb_borough_station_proximity_2024_2026_dictionary.md`, `data/processed/lfb_borough_station_proximity_2024_2026_dq_memo.md`
 - Report figures: `report/Final Report Latex Template (Data Science)/figures/station_proximity/*.png`
-- Key warning: these are public postcode-geocoded station-address coordinates for straight-line proximity/accessibility context only. They are not routing-grade coverage, dispatch, relocation, or optimisation evidence.
+- Key warning: these are postcode-geocoded rows from a June 2017 file whose source page describes the LFEPA data as correct to June 2016. They are historical address evidence for straight-line proximity context, not a current station register or routing-grade coverage, dispatch, relocation, or optimisation evidence.
 
 ## Report Results / Evaluation Figures
 

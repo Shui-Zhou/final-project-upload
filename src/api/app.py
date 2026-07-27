@@ -66,9 +66,9 @@ FOOTPRINT_PROXY_DISCLAIMER = (
     "Exploratory proxy only. Distances are straight-line OSGB36 metres "
     "between the borough's incident centroid and the station's responsibility-"
     "footprint centroid; both anchors are derived from the canonical incident "
-    "table, not from LFB's published station-locations release. Bispo et al. "
-    "2023 (r=0.96 Euclidean vs road-network distance) licenses the use of "
-    "straight-line distance in this footprint proxy. This is not a routing-"
+    "table, not from an operational station-location register. Bispo et al. "
+    "2023 (r=0.96 Euclidean vs road-network distance in its study setting) "
+    "provides limited precedent for this transparent approximation. This is not a routing-"
     "grade dispatch model, not a coverage measure in the OR location-allocation "
     "sense, and not a station-relocation recommendation. See §5.6 of the "
     "report for the full deviation note against §4.2 N1."
@@ -223,7 +223,7 @@ def create_app(
         Return the per-station incident-derived footprint centroids. The
         endpoint is named ``footprints`` (not ``locations``) because the
         underlying parquet is derived from the canonical incident table,
-        not from LFB's published station-locations release; see §5.6.
+        not from an operational station-building register; see §5.6.
         """
         rows = [_row_to_jsonable(r) for r in stations.to_dict(orient="records")]
         return jsonify(
@@ -296,7 +296,7 @@ def create_app(
             )
 
         # Vectorised nearest-neighbour over the 33 borough centroids x
-        # (102 - len(remove)) open stations. Trivially small; no spatial
+        # (102 - len(remove)) remaining assignment-footprint labels. Trivially small; no spatial
         # index needed.
         s_east = open_stations["easting_centroid_m"].to_numpy()
         s_north = open_stations["northing_centroid_m"].to_numpy()

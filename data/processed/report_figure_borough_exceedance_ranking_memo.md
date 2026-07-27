@@ -10,10 +10,11 @@
 
 ## Suggested Caption
 
-Borough ranking of six-minute exceedance share among incidents with recorded first-pump attendance time; bars are annotated with recorded incident counts.
+Borough ranking of the author-derived share above 360 seconds among incidents with recorded first-pump attendance time; whiskers are 95% Wilson intervals and labels show recorded counts.
 
 ## Notes
 
 - Overall recorded-time exceedance share: 32.4%.
 - Highest borough: Hillingdon (52.2%, n=9,095).
 - Lowest borough: Kensington And Chelsea (17.9%, n=9,306).
+- The six-minute value comes from LFB's pan-London average target; this incident-level proportion is not an official per-incident failure rate.

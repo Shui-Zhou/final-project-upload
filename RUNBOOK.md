@@ -40,7 +40,7 @@ python -m pytest tests/ -q
 python -m compileall src
 ```
 
-Current baseline: 77 pytest tests pass.
+Current baseline: 79 pytest tests pass.
 
 ## Run Dashboard Locally
 

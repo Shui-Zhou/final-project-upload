@@ -12,7 +12,7 @@
 
 - **Mobilisation records in 2024--2026 window**: 439,974.
 - **Records with a parsed AttendanceTimeSeconds**: 100.0\%.
-- **Attendance time exceeds the 6-minute target** (among records with a recorded time): 45.2\%.
+- **Author-derived share above 360 seconds** (among records with a recorded time; not an official per-mobilisation failure rate): 45.2\%.
 - **Rows flagged as first-arriving pump** (`PerformanceReporting == '1'`): 63.8\%.
 - **Rows flagged as first-ordered pump** (`PumpOrder == 1`): 63.8\%.
 - **Rows whose `IncidentNumber` matches the canonical incident artefact** (`matches_canonical_incident`): 99.60\%; the remaining 1,763 rows are typically cross-boundary mobilisations into adjoining authorities (Buckinghamshire / Slough / Surrey) or rows from data-vintage drift between the two open-data releases. Downstream §6 / dashboard aggregations should filter on `matches_canonical_incident` to avoid silently mixing non-canonical incidents into canonical-window claims.
