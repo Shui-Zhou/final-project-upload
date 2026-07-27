@@ -18,7 +18,7 @@ Supporting questions:
 
 1. Which boroughs, incident groups, and time periods show persistent incident demand or six-minute first-pump attendance exceedance patterns in the 2024--2026 LFB open-data slice?
 2. How do mobilisation records, false-alarm workload, coordinate suppression, missing response times, and station-address evidence qualify the interpretation of those patterns?
-3. To what extent do the linked dashboard and report evidence package help users make useful but qualified analytical judgements without overstating station coverage, routing, or relocation claims?
+3. To what extent do the linked dashboard and report-side analysis help users make useful, appropriately qualified comparisons?
 
 ## Scope
 

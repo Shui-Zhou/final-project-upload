@@ -1,17 +1,15 @@
 \section{Implementation}
 
-This chapter describes how the system specified in the Approach chapter (\S4) is built: the codebase layout, the data-engineering pipeline, the front-end visualisation components, the linked-view brushing implementation, and any design-decision deviations encountered during construction.
-
 \subsection{System Architecture and Codebase Layout}
 
-The repository is laid out around an artefact-first workflow: each named directory holds one class of project artefact --- raw and processed data with tracked dictionary/provenance/data-quality sidecars, the executed exploratory notebooks behind the \S1.1 statistics, the production \path{src/} package split into data pipelines, Flask API, and D3 dashboard, the pytest harness, the LaTeX report, the literature base, and the evaluation records --- and every prose claim in this report is traceable to a file in one of these locations. Appendix~A indexes the individual entry points, so the body of this chapter concentrates on design decisions and their verification rather than on file-by-file description.
+The repository separates raw and processed data, provenance and data-quality sidecars, exploratory notebooks, the production \path{src/} package, tests, report sources, literature, and evaluation records. The \path{src/} package is divided into the data pipeline, Flask API, and D3 dashboard. Appendix~A lists the main entry points and validation commands.
 
-The implemented artefact includes the backend (\S5.3), the D3 front-end (\S5.4), the assignment-footprint data layer and API (\S5.5), the mobilisation join, dashboard screenshot captures, and the published station-address proximity recovery (\S5.6 D1). The front-end UI toggle for the footprint scenario is planned as future work.
+The implementation includes the backend (\S5.3), D3 front end (\S5.4), assignment-footprint data and API (\S5.5), mobilisation join, dashboard screenshot captures, and historical station-address proximity analysis (\S5.6 D1). A front-end toggle for the footprint scenario remains future work.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{figures/architecture/fig_system_architecture_overview.png}
-\caption{System architecture overview. The figure summarises the concrete implementation path from open LFB/ONS data through Python build scripts and auditable artefacts to the Flask API, D3 dashboard, and report evidence; it is a system schematic, not a data result.}
+\caption{System architecture from the LFB/ONS inputs through Python build scripts to the Flask API, D3 dashboard, report figures, and tests.}
 \label{fig:implementation-pipeline}
 \end{figure}
 
@@ -55,7 +53,7 @@ The implemented artefact includes the backend (\S5.3), the D3 front-end (\S5.4),
     node distance=6mm and 7mm,
     box/.style={draw, rounded corners=1.5pt, align=center, text width=3.0cm, minimum height=0.86cm, fill=gray!8},
     raw/.style={box, fill=blue!8, draw=blue!55!black},
-    artefact/.style={box, fill=green!8, draw=green!50!black},
+    processed/.style={box, fill=green!8, draw=green!50!black},
     output/.style={box, fill=orange!9, draw=orange!65!black},
     arr/.style={-{Stealth[length=2.0mm]}, line width=0.45pt}
 ]
@@ -64,16 +62,16 @@ The implemented artefact includes the backend (\S5.3), the D3 front-end (\S5.4),
 \node[raw, below=of mobilisations] (boundaries) {ONS borough\\boundaries};
 \node[raw, below=of boundaries] (stations) {Public station-address\\postcode table};
 
-\node[artefact, right=1.2cm of incidents] (canonical) {Canonical incident\\artefact\\dictionary / provenance / DQ memo};
-\node[artefact, right=1.2cm of canonical] (summary) {Borough-month-\\incident-group\\summary};
-\node[artefact, below=of summary] (matched) {Matched mobilisation\\artefact};
-\node[artefact, below=of matched] (footprints) {Assignment-footprint\\centroids};
-\node[artefact, below=of footprints] (d1) {Public station-address\\recovery / D1\\comparison};
+\node[processed, right=1.2cm of incidents] (canonical) {Canonical incident\\table\\dictionary / provenance / DQ memo};
+\node[processed, right=1.2cm of canonical] (summary) {Borough-month-\\incident-group\\summary};
+\node[processed, below=of summary] (matched) {Matched mobilisation\\table};
+\node[processed, below=of matched] (footprints) {Assignment-footprint\\centroids};
+\node[processed, below=of footprints] (d1) {Historical station-address\\recovery / D1\\comparison};
 
 \node[output, right=1.2cm of summary] (api) {Flask API};
 \node[output, below=of api] (dashboard) {D3 dashboard};
 \node[output, below=of dashboard] (figures) {Report figures};
-\node[output, below=of figures] (eval) {Evaluation\\artefacts};
+\node[output, below=of figures] (eval) {Evaluation\\records};
 
 \draw[arr] (incidents.east) -- (canonical.west);
 \draw[arr] (boundaries.east) -- ++(0.25,0) |- ([yshift=9mm]api.north) -- (api.north);
@@ -90,12 +88,12 @@ The implemented artefact includes the backend (\S5.3), the D3 front-end (\S5.4),
 \draw[arr] (dashboard.south) -- (figures.north);
 \draw[arr] (figures.south) -- (eval.north);
 \end{tikzpicture}}
-\caption{Deterministic data artefact dependency graph. The figure shows the implemented pipeline dependencies from raw open-data inputs to submitted dashboard/report artefacts; it is a pipeline schematic, not a data result.}
+\caption{Deterministic data dependency graph from raw open-data inputs to processed tables, the dashboard, report figures, and evaluation records.}
 \label{fig:data-artefact-dependency-graph}
 \end{figure}
 
 \subsubsection{Goal and Acceptance Criteria}
-The data pipeline produces a single canonical analytic artefact, \path{data/processed/lfb_canonical_2024_2026.parquet}, that all downstream notebooks, the dashboard backend (\S5.3), and the prose statistics in \S1.1 read from. The build contract is deliberately auditable: the script is rerunnable on the same input, emits the parquet, dictionary, provenance JSON and data-quality memo, and fails on automated validation checks when published-statistic invariants drift.
+The data pipeline produces a canonical table, \path{data/processed/lfb_canonical_2024_2026.parquet}, used by the downstream notebooks, dashboard backend (\S5.3), and statistics in \S1.1. Re-running the build on the same input emits the parquet, dictionary, provenance JSON, and data-quality memo; validation checks fail if the schema or published-statistic invariants drift.
 
 \subsubsection{Ingestion and Transformations}
 The single entry point \path{src/data/build_canonical.py} reads the 66\,MB source workbook (293{,}646 rows $\times$ 39 columns) and applies the explicit cleaning decisions in Table~\ref{tab:canonical-cleaning}. The process does not impute unavailable values or discard records: the canonical output retains 293{,}646 rows and carries missingness and validity as auditable fields.
@@ -128,14 +126,14 @@ The build emits a non-zero exit when schema, unit, coordinate-coverage, exceedan
 A second pipeline script, \path{src/data/build_borough_summary.py}, pre-aggregates 2{,}574 borough--month--incident-group cells. Its 20 columns include exact recorded/exceedance counts, the author-derived share above 360 seconds, a two-sided 95\% Wilson interval, a recorded-$n<30$ display flag, and a partial-month flag, alongside response percentiles and audit fields. The final-month flag is derived from the source maximum date (27 February 2026), not entered in the front end. Pre-aggregation reduces each dashboard request from a 293{,}646-row \path{groupby} to a 2{,}574-row lookup.
 
 \subsubsection{External Verification Harness}
-The build-time validation checks are the \emph{author's} guard against pipeline regressions; the \path{tests/} directory adds an \emph{external} pytest harness, one module per artefact, that any reviewer can run with \texttt{python -m pytest tests/}. The suite verifies schema contracts, published-baseline bands, cross-artefact consistency, API behaviour, footprint negative paths, and station-location invariants, including a dedicated regression test for the \path{exceeds_six_min_share} denominator. Appendix~A gives the consolidated test matrix so the implementation chapter need not enumerate every assertion.
+Build-time checks guard against pipeline regressions, while \path{tests/} provides a pytest module for each major output. The suite verifies schemas, published-baseline bands, consistency between processed tables, API behaviour, footprint negative paths, and station-location invariants, including a dedicated test for the \path{exceeds_six_min_share} denominator. Appendix~A gives the consolidated test matrix.
 
 \subsubsection{Published Station-Address Proximity Recovery}
-The D1 recovery script reads the June 2017 low-carbon-generator file from London Datastore; the source page describes its LFEPA entries as correct to June 2016~\cite{lfb_stations}. It geocodes the 104 historical address rows to postcode centroids through postcodes.io~\cite{postcodesio}. Of these rows, 102 names match the distinct assignment-footprint labels in the 2024--2026 incident slice; two do not. These counts describe different artefacts and neither is presented as a current operating-station total. The matched comparison has a median address-to-footprint shift of 0.43\,km and p90 of 0.99\,km, confirming that a footprint centroid is not a building location.
+The D1 recovery script reads the June 2017 low-carbon-generator file from London Datastore; the source page describes its LFEPA entries as correct to June 2016~\cite{lfb_stations}. It geocodes the 104 historical address rows to postcode centroids through postcodes.io~\cite{postcodesio}. Of these rows, 102 names match the distinct assignment-footprint labels in the 2024--2026 incident slice; two do not. These counts describe different sources and are not a current operating-station total. The matched comparison has a median address-to-footprint shift of 0.43\,km and p90 of 0.99\,km, confirming that a footprint centroid differs from a building location.
 
 \subsection{Backend API}
 
-\subsubsection{Scope and Design Boundary}
+\subsubsection{API Scope}
 The backend exposes a JSON HTTP API to the D3 front end (\S5.4) over the borough-summary parquet of \S5.2. The first-release scope is deliberately narrow: a single resource endpoint, \texttt{GET} \path{/api/borough_summary}, a \texttt{GET} \path{/api/borough_boundaries} boundary layer for the choropleth, plus a \texttt{GET} \path{/health} liveness check. The dashboard's borough drill-down view requires no per-incident detail, so the backend never exposes the 293{,}646-row canonical incident table through any route; restricting the public surface to aggregations of \S5.2 keeps the unfiltered summary payload to about 1.0\,MiB (and typical selected-borough payloads to about 31\,KiB) while preserving a defensible privacy posture because no precise per-incident coordinates leave the backend through this interface.
 
 \subsubsection{Endpoint Contract}
@@ -149,29 +147,29 @@ The Flask application is constructed through the \path{create_app(parquet_path=N
 
 \subsection{Front-End: Linked Views and Uncertainty-Aware Encodings}
 
-The first front-end slice is a static D3 module \cite{bostock2011} served by the same Flask app, rather than a separate React/Vite build. This is a deliberate maintenance choice for the thesis artefact: the interface has one primary dashboard screen, the data are already pre-aggregated, and same-origin serving avoids cross-origin configuration while keeping the project faithful to the planned Flask + D3.js stack of \S4.3. The front-end files live under \path{src/dashboard/}: \path{index.html} defines the dashboard shell and native controls; \path{styles.css} defines the compact operational visual language (white surfaces, charcoal text, teal response-performance encoding, amber target-threshold cueing); and \path{dashboard.js} owns data loading, state, D3 rendering via the declarative \texttt{enter/update/exit} pattern \cite{bostock2011, heer2010}, and linked interactions.
+The front end is a static D3 module \cite{bostock2011} served by the Flask app rather than a separate React/Vite build. The interface has one primary screen, the data are pre-aggregated, and same-origin serving avoids cross-origin configuration. Under \path{src/dashboard/}, \path{index.html} defines the dashboard shell and controls, \path{styles.css} defines the visual styling, and \path{dashboard.js} manages data loading, shared state, D3 rendering through the \texttt{enter/update/exit} pattern \cite{bostock2011, heer2010}, and linked interactions.
 
 At load time the browser fetches two same-origin resources: \path{/api/borough_summary} for the 2{,}574 aggregate rows and \path{/api/borough_boundaries} for the 33-feature GLA London Borough GeoJSON layer. The boundary file is tracked as \path{data/processed/london_borough_boundaries.geojson} with a provenance sidecar recording the GLA ArcGIS service URL and download method; joining is performed case-insensitively because the canonical LFB pipeline title-cases particles such as ``and''/``of'' while the GLA boundary names do not. The dashboard state is the triple \emph{borough, month, incident group}. Changing any select control, clicking a borough on the map, or clicking a row in the ranking table updates that shared state and re-renders all linked panels --- the \emph{Connect} interaction category of \cite{yi2007} operationalising the \emph{relate} task of Shneiderman's mantra \cite{shneiderman1996}.
 
-The current screen contains four linked views. The borough map and ranking table encode the author-derived share above 360 seconds; hover and table rows show the recorded denominator and 95\% Wilson interval, with a warning below 30 recorded times. The trend marks February 2026 as partial, while the distribution panel shows median-to-p95 variability and a six-minute reference line. Precise-coordinate availability was removed from the borough ranking because the aggregate uses the published borough field; coordinate coverage remains report-side evidence for point-level maps.
+The current screen contains four linked views. The borough map and ranking table encode the author-derived share above 360 seconds; hover and table rows show the recorded denominator and 95\% Wilson interval, with a warning below 30 recorded times. The trend marks February 2026 as partial, while the distribution panel shows median-to-p95 variability and a six-minute reference line. Precise-coordinate availability was removed from the borough ranking because the aggregate uses the published borough field; coordinate completeness remains with the point-level figures in \S6.
 
 \subsection{Assignment-Footprint Proxy}
 
 \subsubsection{Scope and Naming}
-The station-context design of \S4.5 requires the implementation to keep two things separate: station-related evidence that can be supported from open data, and routing-grade coverage evidence that cannot. The first-iteration artefact described below implements the supported half as an \emph{assignment-footprint proxy}, derived entirely from the canonical incident table with no external station-locations dataset. The wording change is load-bearing: a coverage proxy in the OR sense (\S\ref{sec:lit-optimisation}) compares geographic regions against fixed station building locations and dispatch travel times; what this artefact compares is the centroid of where each station's incidents historically happened against the centroid of where each borough's incidents historically happened. \S5.6 records the narrower implementation choice as an explicit deviation against N1 and names the public-address recovery path.
+The first station implementation is an \emph{assignment-footprint proxy} derived from the canonical incident table. It compares the centroid of incidents historically assigned to each \path{IncidentStationGround} label with the centroid of incidents in each borough. In contrast, OR coverage models (\S\ref{sec:lit-optimisation}) compare fixed facilities through calibrated travel times. \S5.6 records the deviation from N1 and the later historical public-address analysis.
 
 \subsubsection{Data Layer}
-Two scripts derive assignment-footprint and borough-demand anchors from rounded incident coordinates. \path{src/data/build_station_locations.py} groups by \path{IncidentStationGround}; its 102 rows are distinct source labels, not verified buildings. \path{src/data/build_borough_centroids.py} groups by \path{borough_canonical}. Their medians are transparent spatial proxies, but rounded-coordinate displacement and the common incident source prevent routing, coverage, or current-estate claims.
+Two scripts derive assignment-footprint and borough-demand anchors from rounded incident coordinates. \path{src/data/build_station_locations.py} groups by \path{IncidentStationGround}; its 102 rows are distinct source labels rather than verified buildings. \path{src/data/build_borough_centroids.py} groups by \path{borough_canonical}. Their medians support straight-line comparisons but retain rounded-coordinate displacement and common-source error.
 
 \subsubsection{Footprint-Scenario API}
-Two Flask endpoints expose the artefact. \texttt{GET} \path{/api/station_footprints} returns the 102 assignment-footprint labels; \texttt{GET} \path{/api/footprint_scenario?remove=...} removes named footprint labels and recomputes the nearest remaining footprint. Formally, writing $S$ for the retained label set with footprint centroids $f_s$ and $c_b$ for the demand centroid of borough $b$,
+Two Flask endpoints expose these data. \texttt{GET} \path{/api/station_footprints} returns the 102 assignment-footprint labels; \texttt{GET} \path{/api/footprint_scenario?remove=...} removes named footprint labels and recomputes the nearest remaining footprint. Formally, writing $S$ for the retained label set with footprint centroids $f_s$ and $c_b$ for the demand centroid of borough $b$,
 \begin{equation}
 d_b(S) \;=\; \min_{s \in S} \bigl\| c_b - f_s \bigr\|_2,
 \qquad
 d_b(S \setminus X) \;\ge\; d_b(S) \quad \forall\, X \subset S,
 \label{eq:footprint-monotonicity}
 \end{equation}
-so a removal can only delete minimisation candidates, and the nearest-footprint distance is non-decreasing under any scenario. The endpoint name uses ``footprint'' rather than ``coverage'' because the underlying anchors are footprint centroids, not station building locations; the same name change is applied throughout the prose to signal that the result is an assignment shift, not a coverage decrement. Three negative paths fail with HTTP 400 rather than silently returning a misleading result: an unknown query key, a \path{remove} value that names a station not in the dataset, and a removal list that empties the entire station set. The disclaimer of \S4.5, expanded to spell out the footprint-not-coverage framing and to point at the \S5.6 deviation, is attached verbatim to every response payload so that any downstream consumer (dashboard, screenshot, copied JSON) carries the framing.
+so a removal can only delete minimisation candidates, and the nearest-footprint distance is non-decreasing under any scenario. The endpoint uses ``footprint'' because the anchors are footprint centroids. Three invalid requests return HTTP 400: an unknown query key, a \path{remove} value absent from the dataset, or a removal list that empties the station set. Each response includes a short scope note and a link to the \S5.6 deviation.
 
 \subsubsection{Verification of the Footprint-Scenario API}
 Six endpoint tests in \path{tests/test_api.py} carry the contract into the test suite: the footprint table and baseline scenario return their required schemas with the disclaimer attached; removing any real station never decreases any borough's nearest-footprint distance (the monotonicity invariant of Eq.~\ref{eq:footprint-monotonicity}); and unknown station names, unknown query keys, and removal of the entire station set all fail with HTTP 400 rather than returning a misleading result. Spot-checking the Soho-removal scenario --- Soho being the busiest station in the slice --- changes exactly one borough's nearest-footprint assignment (Westminster, 1.22\,km to Soho $\to$ 1.78\,km to Euston), the expected behaviour for a single inner-London removal.
@@ -181,10 +179,10 @@ Both anchors come from the same incident pool, so baseline distances are tight b
 
 \subsection{Deviations from Specification}
 
-The §4 specification is the contract; the §5 implementation is what was actually built. Where the two diverge, this subsection records each deviation as a single bounded entry --- \emph{against which §4 requirement, what was built instead, why, and how the deviation is recovered or accepted}. The list keeps closed deviations visible because they explain the evidence boundary of the final artefact.
+The following entry records where the implementation differs from the §4 specification and how the later address analysis handles the difference.
 
 \subsubsection{Deviation D1: Open-Data Source Versus Footprint Proxy}
 \textbf{Against:} \S4.2 N1 names the LFB station-locations open release (\path{lfb_stations} in the bibliography) as a permitted data source for the system. The requirement therefore needs a clear distinction between brick-and-mortar building locations and incident-derived footprint centroids.
-\textbf{Built instead:} \S5.5 derives station ``locations'' as the median (\path{Easting_rounded}, \path{Northing_rounded}) per \path{IncidentStationGround} group of the canonical incidents, and frames the artefact as an \emph{assignment-footprint proxy} rather than a coverage proxy in the OR sense. The API endpoints are named \path{/api/station_footprints} and \path{/api/footprint_scenario} (not \path{/api/station_locations} and \path{/api/coverage_scenario}) and the response disclaimers spell out the framing.
-\textbf{Why:} The original May acquisition attempts did not retrieve a clean station-location table, so the first implementation deliberately chose the most honest one-command artefact available from the canonical incidents. The later recovery pass found a stable London Datastore table of fire-station names, addresses, and postcodes; because the source gives postcodes rather than routing-grade station entrances, the recovery uses it as a public station-address proximity table, not as coverage evidence.
-\textbf{Closure:} The proximity build of \S5.2 now supplies the public-address layer, which is used to qualify and illustrate the D1 deviation in \S6. The assignment-footprint API remains correctly named because it still uses incident-footprint centroids. Any future routing-grade coverage layer would still require a road-network travel-time model and validation beyond this thesis's current evidence base.
+\textbf{Built instead:} \S5.5 derives assignment-footprint centroids as the median (\path{Easting_rounded}, \path{Northing_rounded}) for each \path{IncidentStationGround} group. The endpoints are therefore named \path{/api/station_footprints} and \path{/api/footprint_scenario}.
+\textbf{Why:} The original May acquisition attempts did not retrieve a clean station-location table. A later pass found a London Datastore table of station names, addresses, and postcodes, which supports a historical postcode-level comparison.
+\textbf{Closure:} The proximity build in \S5.2 supplies that second source for the comparison in \S6. The API name remains unchanged because it still uses incident-footprint centroids; road travel-time analysis would require further data and validation.

@@ -1,6 +1,6 @@
 \section{Background}\label{sec:background}
 
-This chapter supplies the domain, data, and operating definitions needed before the literature is evaluated. \S\ref{sec:literature} then positions the project against prior research; the present chapter states the concepts and dataset constraints that the later design and implementation assume.
+This chapter defines the LFB data window, the visual-analytics terms, and the spatial and temporal units used in the analysis.
 
 \subsection{The London Fire Brigade and the 2024--2026 Open Data Window}\label{sec:background-lfb}
 
@@ -24,38 +24,36 @@ The literature review (\S\ref{sec:literature}) draws on information-visualisatio
     \item \textbf{Dashboard} --- following Sarikaya et al.~\cite{sarikaya2018} and Bach et al.~\cite{bach2023patterns}, a multi-view interactive visual display whose layout, interactivity, and data semantics are bounded by an explicit purpose, audience, and update cadence. ``Dashboard'' here is therefore narrower than ``visualisation'': a single map is a visualisation but not a dashboard.
     \item \textbf{Linked view / brushing} --- following Yi et al.'s \emph{Connect} interaction category~\cite{yi2007}, a multi-panel visualisation where a selection in one panel propagates highlight to the corresponding records in every other panel. The dashboard's borough $\to$ time-series $\to$ distribution propagation is the canonical instance.
     \item \textbf{Uncertainty encoding} --- following MacEachren et al.~\cite{maceachren2012}, the use of a visual variable or adjacent field to make uncertainty visible beside the estimate. The implemented dashboard shows recorded denominators, Wilson intervals, small-sample flags, partial-month status, and median-to-p95 response ranges. Missingness and coordinate/proxy limitations are reported separately because they are not sampling uncertainty.
-    \item \textbf{Station-related context} --- this project's term for the exploratory assignment-footprint and public station-address proximity layer of \S4.5. It is a straight-line context cue around historical incident responsibility and postcode-geocoded station addresses, not a routing-grade station-coverage, dispatch, or relocation model. The contrast is with the location-allocation optimisation literature surveyed in \S\ref{sec:lit-optimisation}~\cite{church1974,goldberg2004,reconfig2023,beijing2021,ocmola2018,spacesyntax2023}.
+    \item \textbf{Station-related context} --- assignment-footprint and historical public-address proximity results calculated with straight-line distance. Travel-time coverage would require road, capacity, availability, and dispatch data; the relevant location-allocation literature is reviewed in \S\ref{sec:lit-optimisation}~\cite{church1974,goldberg2004,reconfig2023,beijing2021,ocmola2018,spacesyntax2023}.
 \end{itemize}
-
-Each definition is referenced verbatim in the chapters that use the term, so a reader can resolve any later ambiguity by returning to this subsection.
 
 \subsection{Geospatial and Temporal Granularities}\label{sec:background-granularity}
 
 The dashboard works across borough, ward, and point/grid geography. Greater London contains 33 local-authority areas; wards and Lower-Layer Super Output Areas (LSOAs, mean population $\approx$\,1{,}500) provide finer administrative and statistical units. The release supplies named borough/ward/LSOA fields as well as two coordinate families. The borough dashboard joins the named borough field to the GLA boundary layer~\cite{ons_boundaries}; it does not reconstruct boroughs from incident coordinates.
 
-The two coordinate families must not be conflated. Precise per-incident coordinates (\texttt{Easting\_m}, \texttt{Northing\_m}) are valid for about 37.9\% of rows; disclosure control accounts for much of the remainder, and the missingness may be systematic. Rounded coordinates (\texttt{Easting\_rounded}, \texttt{Northing\_rounded}) are nearly complete, but rounding introduces displacement and does not guarantee unbiased fine-scale spatial estimates. Precise points therefore support subset-only density diagnostics, while rounded points can support coarser grid checks with an explicit proxy-error caveat. Neither coordinate family limits borough counts or response summaries, which use the published borough field directly. Table~\ref{tab:evidence-support} records these claim boundaries.
+The two coordinate families must not be conflated. Precise per-incident coordinates (\texttt{Easting\_m}, \texttt{Northing\_m}) are valid for about 37.9\% of rows; disclosure control accounts for much of the remainder, and the missingness may be systematic. Rounded coordinates (\texttt{Easting\_rounded}, \texttt{Northing\_rounded}) are nearly complete, but rounding introduces displacement and does not guarantee unbiased fine-scale spatial estimates. Precise points therefore support subset-only density diagnostics, while rounded points can support coarser grid checks with an explicit proxy-error caveat. Neither coordinate family limits borough counts or response summaries, which use the published borough field directly. Table~\ref{tab:evidence-support} shows which fields enter each analysis.
 
 \begin{table}[H]
 \centering
 \footnotesize
 \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.1cm}*{5}{>{\centering\arraybackslash}X}}
 \toprule
-Claim class & Borough / rounded fields & Precise coordinates & Recorded first-pump times & Matched mobilisation partition & Station-address points \\
+Analysis & Borough / rounded fields & Precise coordinates & Recorded first-pump times & Matched mobilisation partition & Station-address points \\
 \midrule
-Incident demand ranking and monthly trends & \textcolor{teal!60!black}{\textbf{Primary}} & -- & -- & -- & -- \\
+Incident demand ranking and monthly trends & \textcolor{teal!60!black}{\textbf{Main input}} & -- & -- & -- & -- \\
 \addlinespace
-Response-performance shares and distributions (Eq.~\ref{eq:exceedance-share}) & \textcolor{teal!60!black}{\textbf{Primary}} & -- & \textcolor{teal!60!black}{\textbf{Primary}} & \textcolor{blue!60!black}{\textbf{Qualifier}} & -- \\
+Response-performance shares and distributions (Eq.~\ref{eq:exceedance-share}) & \textcolor{teal!60!black}{\textbf{Main input}} & -- & \textcolor{teal!60!black}{\textbf{Main input}} & \textcolor{blue!60!black}{\textbf{Context}} & -- \\
 \addlinespace
-Street-level density diagnostics & -- & \textcolor{orange!80!black}{\textbf{Diagnostic}} & -- & -- & -- \\
+Street-level density diagnostics & -- & \textcolor{orange!80!black}{\textbf{Subset}} & -- & -- & -- \\
 \addlinespace
-Appliance-level deployment patterns & -- & -- & -- & \textcolor{teal!60!black}{\textbf{Primary}} & -- \\
+Appliance-level deployment patterns & -- & -- & -- & \textcolor{teal!60!black}{\textbf{Main input}} & -- \\
 \addlinespace
 Station-address proximity context & \textcolor{violet!70!black}{\textbf{Context}} & -- & -- & -- & \textcolor{violet!70!black}{\textbf{Context}} \\
 \midrule
-Routing-grade coverage, dispatch, or relocation & \multicolumn{5}{c}{\textcolor{red!70!black}{\textbf{Not supported by any family in this evidence base (\S4.5)}}} \\
+Travel-time and dispatch analysis & \multicolumn{5}{c}{\textcolor{red!70!black}{\textbf{Additional station, road, capacity, and operational data required (\S4.5)}}} \\
 \bottomrule
 \end{tabularx}
-\caption{Evidence-support matrix: which evidence family supports which claim class. Primary carries the claim; Diagnostic supports subset-only robustness checks; Qualifier conditions interpretation; Context is a descriptive cue; a dash marks an unused family.}
+\caption{Fields used by each analysis. Main input marks the fields used in the calculation; Subset marks the precise-coordinate diagnostic; Context marks a related comparison; a dash marks an unused field.}
 \label{tab:evidence-support}
 \end{table}
 

@@ -1,7 +1,5 @@
 \section{Results and Evaluation}
 
-This chapter answers the research questions of \S1.3 using three evidence types. First, the data-pipeline results are reproducible from tracked scripts and sidecars. Second, the dashboard results are supported by the implemented Flask/D3 artefact, API tests, and captured screenshots. Third, the user-evaluation strand combines the closed heuristic walk-through with task-based inspection and a compact think-aloud summary.
-
 \subsection{Demand and Response-Performance Patterns}
 
 The canonical slice contains 293{,}646 incidents across 33 London local-authority areas from January 2024 to 27 February 2026; the last month is partial. Among 278{,}468 rows with a recorded first-pump time, the author's incident-level share above 360 seconds is 32.4\% (95\% Wilson CI 32.3--32.6\%). This is a diagnostic based on the numerical value of LFB's pan-London average target, not an official per-incident failure rate. False alarms form 46.5\% of incidents, so the dashboard retains incident group in every comparison.
@@ -40,7 +38,7 @@ The incident-group distribution in Figure~\ref{fig:incident-group-response-distr
 \label{fig:temporal-density-heatmap}
 \end{figure}
 
-Figure~\ref{fig:temporal-density-heatmap} adds the temporal result promised by the objective-2 evidence chain. False alarms peak on Wednesday at 11:00, fire incidents peak on Saturday at 19:00, and special-service incidents peak on Tuesday at 19:00. The three panels therefore support different operational interpretations: false-alarm demand is strongest in daytime institutional hours, while fire and special-service demand show more evening concentration. This is descriptive demand evidence, not a forecasting model.
+False alarms peak on Wednesday at 11:00, fire incidents on Saturday at 19:00, and special-service incidents on Tuesday at 19:00 (Figure~\ref{fig:temporal-density-heatmap}). False-alarm demand is strongest in daytime institutional hours, while fires and special services show more evening concentration.
 
 \begin{figure}[H]
 \centering
@@ -49,7 +47,7 @@ Figure~\ref{fig:temporal-density-heatmap} adds the temporal result promised by t
 \label{fig:false-alarm-sensitivity}
 \end{figure}
 
-The false-alarm sensitivity check in Figure~\ref{fig:false-alarm-sensitivity} tests whether the headline ranking is merely a false-alarm artefact. The ranking is stable at the borough level: Spearman rank correlation is 0.991 between the all-incident and excluding-false-alarm rankings, and 0.970 between the all-incident and fire-only rankings. The largest rank movement when false alarms are excluded is three places. This does not make false alarms irrelevant, but it does show that the outer-borough exceedance pattern is not created solely by the largest incident group.
+The false-alarm sensitivity check in Figure~\ref{fig:false-alarm-sensitivity} tests whether the headline ranking is driven by false alarms. The ranking is stable at the borough level: Spearman rank correlation is 0.991 between the all-incident and excluding-false-alarm rankings, and 0.970 between the all-incident and fire-only rankings. The largest rank movement when false alarms are excluded is three places. False alarms remain a substantial part of workload, but they do not create the outer-borough pattern on their own.
 
 \begin{figure}[H]
 \centering
@@ -58,13 +56,13 @@ The false-alarm sensitivity check in Figure~\ref{fig:false-alarm-sensitivity} te
 \label{fig:taylor-closure-cohort-context}
 \end{figure}
 
-Figure~\ref{fig:taylor-closure-cohort-context} adds the historical cross-check promised in \S\ref{sec:lit-spatial} and \S4.1. Boroughs containing Taylor-affected closure stations have a mean recorded-time exceedance share of 27.4\% in the present slice, below the other-borough mean of 36.8\%; the two boroughs containing Taylor-unaffected closure stations average 22.8\%. This does not contradict Taylor's finding, because Taylor models dwelling fires around 500\,m grid squares in 2012--2014, whereas this project uses all-main-incident borough aggregates for 2024--2026. The result is therefore descriptive context only: it prevents the dashboard narrative from attributing the current outer-borough pattern mechanically to the 2014 closure cohort, while preserving Taylor as a useful historical anchor. Taylor's affected/unaffected labels were checked against the 2017 paper, and the station-to-borough mapping against the official closure listing retained in the provenance sidecar.
+Figure~\ref{fig:taylor-closure-cohort-context} provides a historical cross-check. Boroughs containing Taylor-affected closure stations have a mean recorded-time exceedance share of 27.4\% in the present slice, below the other-borough mean of 36.8\%; the two boroughs containing Taylor-unaffected closure stations average 22.8\%. Taylor models dwelling fires on 500\,m grid squares in 2012--2014, whereas this comparison uses all main incident groups at borough level in 2024--2026. The current averages therefore cannot explain the effect estimated by Taylor. The affected/unaffected labels were checked against the 2017 paper, and the station-to-borough mapping against the official closure listing retained in the provenance sidecar.
 
-Mobilisation evidence qualifies this incident-row summary. The mobilisation pipeline retains a matched-only partition for deployment claims: 438{,}211 mobilisation rows match canonical incidents, while 1{,}763 cross-boundary or unmatched rows are kept out of matched-only deployment statements. This matters for RQ2 because an incident row records a summary of the event, whereas the mobilisation table records appliance-level deployment and arrival fields. The report therefore treats mobilisation-derived claims as a qualification layer: useful for explaining deployment patterns, but only when the \path{matches_canonical_incident == True} filter is named.
+The mobilisation table adds appliance-level deployment and arrival fields to the incident summary. Of its rows, 438{,}211 match canonical incidents; 1{,}763 cross-boundary or unmatched rows are retained separately. Deployment summaries in this report use the \path{matches_canonical_incident == True} partition.
 
 \subsection{Station-Address Proximity and the D1 Recovery}
 
-The station-address check (\S5.6) compares the incident-derived footprints with postcode centroids from the historical June 2017 file. It supplies a second reference point, not a current station register.
+The station-address check (\S5.6) compares incident-derived footprints with postcode centroids from the historical June 2017 file. It supplies a second historical reference point.
 
 \begin{figure}[H]
 \centering
@@ -78,15 +76,15 @@ The historical June 2017 source file contains 104 address rows; its page describ
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{figures/station_proximity/fig_borough_nearest_station_proximity.png}
-\caption{Nearest public fire-station postcode coordinate to each borough incident-demand centroid. This is a straight-line proximity cue for report discussion, not a routing-grade coverage model.}
+\caption{Straight-line distance from each borough incident-demand centroid to the nearest historical public fire-station postcode coordinate.}
 \label{fig:borough-station-proximity}
 \end{figure}
 
-At borough level, the nearest public station postcode coordinate to each incident-demand centroid has a median straight-line distance of 1.36\,km and a maximum of 2.92\,km. The highest-distance boroughs in this demand-centroid calculation are Barking and Dagenham, Richmond upon Thames, Greenwich, Harrow, and Redbridge. This does not answer where a borough has six-minute geographic coverage; it provides RQ2--RQ3 context by making the station-related caveat visible rather than leaving the dashboard's footprint layer to be over-read.
+At borough level, the nearest historical station postcode coordinate to each incident-demand centroid has a median straight-line distance of 1.36\,km and a maximum of 2.92\,km. The highest-distance boroughs are Barking and Dagenham, Richmond upon Thames, Greenwich, Harrow, and Redbridge. These centroid distances describe proximity; they contain no road travel time or live availability.
 
-\subsection{Dashboard Usability: Representation and Interaction Evidence}
+\subsection{Dashboard Usability: Representation and Interaction}
 
-The dashboard implements the core linked-view behaviours needed for RQ3: a map selection updates the trend, distribution, and ranking panels; filter controls re-render the same state; and empty selections render a visible empty state rather than a broken panel. Figure~\ref{fig:dashboard-overview} gives the whole layout, while the component captures below keep the trend and ranking evidence legible at report scale.
+The dashboard implements the core linked-view behaviours needed for RQ3: a map selection updates the trend, distribution, and ranking panels; filter controls re-render the same state; and empty selections render a visible empty state. Figure~\ref{fig:dashboard-overview} gives the whole layout, while the component captures below show the trend and ranking at report scale.
 
 \begin{figure}[H]
 \centering
@@ -108,26 +106,26 @@ The first-iteration interface still has limits. The footprint-scenario API is te
 
 \subsection{Added Value over Non-Interactive Baselines}
 
-A systems contribution should state what the artefact adds relative to the obvious cheaper alternatives, not only what the data contain. Table~\ref{tab:baseline-value} compares the dashboard against four non-interactive baselines a reader could reach for instead, and anchors each claimed increment to evidence already presented in this report. This is an analytical capability comparison supported by the implemented artefact, measured latencies, and the walkthrough evidence above; it is not a controlled user comparison, which remains future work (\S8.3).
+Table~\ref{tab:baseline-value} compares the dashboard with four non-interactive alternatives. The comparison covers implemented functions and measured latency; a controlled user comparison remains future work (\S8.3).
 
 \begin{table}[H]
 \centering
 \small
 \begin{tabularx}{\textwidth}{p{3.4cm}Xp{3.6cm}}
 \toprule
-Baseline & What the dashboard adds & Evidence anchor \\
+Baseline & What the dashboard adds & Report reference \\
 \midrule
-Static borough choropleth & Linked ranking table and hover values expose the exact denominator-qualified figures behind each colour, so a colour impression can be checked against counts and coverage before it becomes a claim. & Figures~\ref{fig:dashboard-overview}, \ref{fig:dashboard-ranking}; Table~\ref{tab:task-evaluation-matrix} path 1 \\
+Static borough choropleth & Linked ranking table and hover values show the recorded denominator and interval behind each colour. & Figures~\ref{fig:dashboard-overview}, \ref{fig:dashboard-ranking}; Table~\ref{tab:task-evaluation-matrix} path 1 \\
 Raw LFB spreadsheet & The 293{,}646-row table is impractical to compare manually; pre-aggregated cells behind borough/month/incident-group filters return comparisons at interactive latency (1.1--17.7\,ms API response, \S5.3; 39.3\,ms measured click-to-update, Strand 1 record in Appendix~B). & \S5.2--\S5.3; API contract tests \\
 Station-footprint map alone & The public station-address proximity layer quantifies the footprint-versus-address gap (median 0.43\,km, p90 0.99\,km), so the footprint layer cannot be silently read as station coverage. & Figures~\ref{fig:station-d1-shift}, \ref{fig:borough-station-proximity} \\
 Single aggregate response median & Median--p90--p95 ranges and the author-derived proportion expose the tail that a median alone hides. & Figure~\ref{fig:incident-group-response-distribution} \\
 \bottomrule
 \end{tabularx}
-\caption{Added analytical value of the dashboard over non-interactive baselines. Each increment is anchored to implemented-artefact evidence; none is a user-study result.}
+\caption{Implemented dashboard functions compared with four non-interactive baselines.}
 \label{tab:baseline-value}
 \end{table}
 
-\subsection{Data-Quality and Uncertainty Surfacing}
+\subsection{Data Quality and Uncertainty}
 
 Four distinct issues affect interpretation. \emph{Variability} is the spread of observed response times and is described by median, p90, and p95. \emph{Missingness} concerns absent first-pump times and suppressed precise coordinates; it changes denominators or limits point-level maps. \emph{Proxy error} comes from rounded coordinates, postcode centroids, and incident-derived footprints. \emph{Statistical uncertainty} is finite-sample uncertainty around a recorded-time proportion; it is shown by Wilson intervals and the recorded-$n<30$ flag. None of these substitutes for another.
 
@@ -151,9 +149,9 @@ The precise-subset map in Figure~\ref{fig:precise-spatial-density} is a diagnost
 
 The dashboard now exposes the recorded denominator, Wilson interval, small-sample warning, and partial-month status. Coordinate missingness and proxy error stay beside the point-level figures, while the matched-mobilisation rule remains report/API-side. Fuzziness and quantile dotplots are future work because neither is implemented in the current interface.
 
-\subsection{System-Evaluation Traceability}
+\subsection{Requirement Status}
 
-The present evaluation is therefore strongest as a system/data evaluation with a task-based user-evaluation layer. Table~\ref{tab:req-traceability} maps the main requirements to implemented artefacts, evidence, and remaining limitations, giving the chapter a clear bridge from implementation evidence to the think-aloud observations.
+Table~\ref{tab:req-traceability} records the implemented portion and remaining work for each functional requirement.
 
 \begin{table}[H]
 \centering
@@ -165,7 +163,7 @@ Req. & Status & Delivered & Not delivered \\
 F1 & Partial & Response-diagnostic choropleth; borough/month/group filters; ranking table & Demand choropleth and year/weekday/hour filters \\
 F2 & Partial & Linked monthly incident-count and exceedance-diagnostic traces & A direct monthly response-time trace as originally specified \\
 F3 & Partial & Median-to-p95 ranges by incident group & Full distribution, variance view, or quantile dotplot \\
-F4 & Partial & Footprint API and report-side historical address/proximity evidence & Station context in the dashboard UI \\
+F4 & Partial & Footprint API and report-side historical address/proximity analysis & Station context in the dashboard UI \\
 F5 & Partial & Recorded denominators, Wilson intervals, small-$n$ and partial-month flags; report-side coordinate/mobilisation caveats & A single UI encoding covering every missingness and proxy field \\
 \bottomrule
 \end{tabularx}
@@ -182,7 +180,7 @@ The capability check identified four limits:
     \item Task~1 asked for the two highest incident counts, but neither the map nor the fixed-order table ranks demand. A manual scan is possible; the ranking task is not implemented.
     \item Task~2 can compare medians through the table or tooltip. The choropleth cannot do this because it encodes an exceedance proportion, not the median.
     \item Task~3 asked users to sort the table and identify incident ``density''. Interactive sorting and a density layer are absent. The revised task uses the existing order and compares visible counts with the response diagnostic.
-    \item The empty-cell question is hypothetical because all 2{,}574 cells are populated, and the station prompt evaluates the report evidence package rather than the dashboard screen.
+    \item The empty-cell question is hypothetical because all 2{,}574 cells are populated, and the station prompt uses the report-side figures rather than the dashboard screen.
 \end{itemize}
 
 \begin{table}[H]
@@ -190,22 +188,22 @@ The capability check identified four limits:
 \small
 \begin{tabularx}{\textwidth}{p{2.4cm}p{3.2cm}p{4.3cm}X}
 \toprule
-User path & Task focus & Observed issue & Captured evidence \\
+User path & Task focus & Observed issue & Recorded result \\
 \midrule
 Map-first analyst & Compare Hillingdon with an inner-London borough using map, trend, and ranking table & Uses the table to move from colour impression to an exact recorded-denominator comparison. & Supported by the implemented linked views. \\
 Table-first policy reader & Interpret response-performance ranking & Uses exact values, but initially reads the proportion as applying to all incidents. & Supports the clearer recorded-$n$ and interval wording. \\
-Station-context reader & Decide whether the station layer supports coverage claims & Initially looks for a coverage interpretation, then separates assignment footprint and public station-address proximity after reading the disclaimer. & Avoids routing/coverage overclaiming after reading the station-context caveat. \\
+Station-context reader & Interpret the two station references & Initially confuses the assignment footprint with the public address, then separates them after reading the scope note. & Correctly distinguishes the two sources after the prompt. \\
 \bottomrule
 \end{tabularx}
 \caption{Task-based evaluation matrix used to connect dashboard actions with observable interpretation behaviour.}
 \label{tab:task-evaluation-matrix}
 \end{table}
 
-The useful evidence is how participants compared panels and qualified claims. Unsupported task mechanics are excluded from the system-completion claim.
+The participant summary below covers how the panels were compared. Results from unsupported task mechanics are omitted from the completion assessment.
 
 \subsection{Think-Aloud Summary}
 
-The compact think-aloud evaluation involved three voluntary participants, anonymised here as Participant~1--Participant~3. Each participant completed a task-based inspection of the dashboard while verbalising their interpretation of the linked map, trend, distribution, and ranking views. The observation notes focused on comparison behaviour, uncertainty noticing, denominator checking, and whether station-related evidence encouraged or prevented station-coverage overclaiming. No sensitive personal data were collected, and the results are treated as a small-scale formative interpretability check rather than as a statistically generalisable user study.
+The compact think-aloud evaluation involved three voluntary participants, anonymised here as Participant~1--Participant~3. Each participant completed a task-based inspection of the dashboard while verbalising their interpretation of the linked map, trend, distribution, and ranking views. The observation notes focused on comparison behaviour, uncertainty noticing, denominator checking, and interpretation of station context. No sensitive personal data were collected, and the results are treated as a small-scale formative interpretability check rather than as a statistically generalisable user study.
 
 Table~\ref{tab:thinkaloud-summary} reproduces the participant-level aggregate stored in the evaluation summary. Per-session notes are not included in the submitted workspace, so the table cannot be independently reconciled to raw logs here.
 
@@ -225,8 +223,8 @@ Participant 3 & \textbf{Cautious-trend path:} trend-first path; all tasks comple
 \label{tab:thinkaloud-summary}
 \end{table}
 
-The aggregate suggests that different starting panels still led to borough comparisons. Denominator awareness was mixed, supporting the clearer recorded-$n$ wording. The coordinate-coverage prompt also exposed a design error: it encouraged users to connect point availability with a borough estimate that does not use points. That column has therefore been replaced by the confidence interval. Station evidence remained understandable only with the report-side figures. These interface changes were made after the sessions; they are covered by system tests and the updated walk-through, but have not been participant-tested.
+The aggregate suggests that different starting panels still led to borough comparisons. Denominator awareness was mixed, supporting the clearer recorded-$n$ wording. The coordinate-coverage prompt also exposed a design error: it encouraged users to connect point availability with a borough estimate that does not use points. That column has therefore been replaced by the confidence interval. Station context remained understandable only with the report-side figures. These interface changes were made after the sessions; they are covered by system tests and the updated walk-through, but have not been participant-tested.
 
 \subsection{Evaluation Limitations}
 
-The evaluation is formative and small. More importantly, the submitted workspace contains the instruments and aggregate summary but not the per-session notes. Participant-level details therefore cannot be re-audited from the repository alone. The unsupported Task~1 and Task~3 mechanics also prevent a claim that all original tasks validated the system. What the evidence does support is narrower: linked borough comparisons were usable, while denominator and station-context wording needed prompts.
+The evaluation is formative and small. The submitted workspace contains the instruments and aggregate summary but no per-session notes, so participant-level details cannot be re-audited from the repository alone. Task~1 and Task~3 also asked for mechanics the interface did not provide. The completed paths show usable linked borough comparisons, while denominator and station-context wording sometimes needed prompts.

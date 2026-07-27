@@ -2,7 +2,7 @@
 
 \subsection{Background and Motivation}
 
-Urban emergency response is a core urban-informatics problem because access to public services is spatially uneven and time-sensitive; the choice of measure can change the conclusion~\cite{talen1998,pereira2017equity}. Open data can improve accountability, but denominators, missing values, disclosure control, and operational caveats can make a simple map look more authoritative than its evidence allows. LFB publishes incident records~\cite{lfb_incidents} and a six-minute pan-London average first-appliance target~\cite{lfb_attendance}. Earlier public-facing LFB visualisations include a GOV.UK performance prototype and the ODI station-closure map~\cite{govuk2014,odi2013}; neither brings response-time denominators and spatial-data limits into the same view. The 293{,}646-incident slice used here motivates an auditable view in which response patterns and their limitations remain visible together.
+Urban emergency response is a core urban-informatics problem because access to public services is spatially uneven and time-sensitive; the choice of measure can change the conclusion~\cite{talen1998,pereira2017equity}. Open data can improve accountability, but denominators, missing values, disclosure control, and operational caveats complicate a simple map. LFB publishes incident records~\cite{lfb_incidents} and a six-minute pan-London average first-appliance target~\cite{lfb_attendance}. Earlier public-facing LFB visualisations include a GOV.UK performance prototype and the ODI station-closure map~\cite{govuk2014,odi2013}; neither brings response-time denominators and spatial-data limits into the same view. The 293{,}646-incident slice used here therefore motivates a dashboard in which response patterns and their limitations remain visible together.
 
 Initial exploratory analysis of LFB incident data from January 2024 to 27 February 2026 (293{,}646 records; final month partial) confirms three motivating problems:
 
@@ -42,15 +42,15 @@ Together, these disparities and the limitations of earlier public-facing tools f
 
 \subsection{Aims and Objectives}
 
-The project aim is to design, build, and evaluate a web dashboard for structured inspection of LFB open data: where workload and response-time pressure appear together, how patterns vary by incident type and time, and which limitations affect each claim. Potential users are public-service analysts and researchers comparing borough response performance. The evaluation covers analytical interpretation, not operational adoption.
+The project aim is to design, build, and evaluate a web dashboard for inspecting LFB open data: where workload and response-time pressure appear together, how patterns vary by incident type and time, and which data limitations affect the comparison. Potential users are public-service analysts and researchers comparing borough response performance. The evaluation examines analytical interpretation.
 
 The concrete objectives are:
 
 \begin{enumerate}
     \item \textbf{Data pipeline.} Build a reproducible processing pipeline over LFB incident records, ONS borough boundaries, mobilisation records, and a public fire-station address list (postcode-geocoded for proximity context) that handles the 62\% missing-coordinate problem explicitly.
     \item \textbf{Spatial-temporal analytics.} Implement borough-level aggregations, diagnostic hexbin/density maps for the geocoded subset, and response-time distributions sliced by hour, weekday, borough, and incident type.
-    \item \textbf{Interactive dashboard.} Deliver a Flask + D3.js dashboard with linked-view brushing across map, time-series, distribution, and ranking panels, plus a bounded station-proximity/assignment-footprint evidence strand that is explicitly framed as exploratory context rather than an operational dispatch, routing, coverage, or relocation model.
-    \item \textbf{Evaluation.} Evaluate the artefact against the research questions below using a closed heuristic walk-through, scripted think-aloud/probe instruments, dashboard screenshots, and a compact think-aloud summary.
+    \item \textbf{Interactive dashboard.} Deliver a Flask + D3.js dashboard with linked-view brushing across map, time-series, distribution, and ranking panels, plus clearly labelled station-proximity and assignment-footprint context.
+    \item \textbf{Evaluation.} Evaluate the dashboard against the research questions below using a closed heuristic walk-through, scripted think-aloud/probe instruments, dashboard screenshots, and a compact think-aloud summary.
 \end{enumerate}
 
 \subsection{Research Questions}
@@ -60,15 +60,15 @@ The initial project brief listed five example questions. This thesis consolidate
 \begin{enumerate}
     \item \textbf{Primary RQ.} How can an uncertainty-aware visual analytics dashboard support structured inspection of London Fire Brigade incident demand and first-pump response performance using public open data?
     \item \textbf{RQ1.} Which boroughs, incident groups, and time periods show persistent incident demand or author-derived six-minute exceedance patterns in the 2024--2026 LFB open-data slice?
-    \item \textbf{RQ2.} How do mobilisation records, false-alarm workload, coordinate suppression, missing response times, and station-address evidence qualify the interpretation of those patterns?
-    \item \textbf{RQ3.} To what extent do the linked dashboard and report evidence package help users make useful but qualified analytical judgements without overstating station coverage, routing, or relocation claims?
+    \item \textbf{RQ2.} How do mobilisation records, false-alarm workload, coordinate suppression, missing response times, and historical station addresses affect the interpretation of those patterns?
+    \item \textbf{RQ3.} To what extent do the linked dashboard and supporting analysis help users compare boroughs while retaining denominator and station-proximity limitations?
 \end{enumerate}
 
-The questions have distinct evidential roles. RQ1 is descriptive: borough-month and incident-group summaries establish where patterns persist. RQ2 is a qualification question: mobilisation matching, false-alarm sensitivity, response-time missingness, coordinate coverage, and station-address evidence test how far those descriptions can be trusted. RQ3 evaluates the artefact rather than London itself: linked-view behaviour, the heuristic walk-through, and task/probe evidence test whether users can reach a comparison while retaining the stated caveats. The primary RQ is answered only by synthesising these three strands; none supports routing, dispatch, forecasting, or relocation claims.
+RQ1 identifies recurring borough, time, and incident-group patterns. RQ2 examines how mobilisation matching, false-alarm sensitivity, missing response times, coordinate availability, and historical station addresses change their interpretation. RQ3 tests whether users can make the comparison through the linked views while retaining those limitations.
 
 \subsection{Data Sources and Conventions}
 
-The primary dataset is the \textbf{LFB Incident Records} open dataset \cite{lfb_incidents}, used here from 2024-01 to 27 February 2026 (293{,}646 rows $\times$ 39 source columns, 63\,MB). The implementation also uses the GLA borough boundary layer \cite{ons_boundaries}, LFB mobilisation records \cite{lfb_mobilisations}, incident-derived borough and station-footprint centroids, and a June 2017 London Datastore station-address file whose source page describes the LFEPA data as correct to June 2016~\cite{lfb_stations}. That historical address file supports a bounded proximity check, not a current station register or routing-grade entrance dataset.
+The primary dataset is the \textbf{LFB Incident Records} open dataset \cite{lfb_incidents}, used here from 2024-01 to 27 February 2026 (293{,}646 rows $\times$ 39 source columns, 63\,MB). The implementation also uses the GLA borough boundary layer \cite{ons_boundaries}, LFB mobilisation records \cite{lfb_mobilisations}, incident-derived borough and station-footprint centroids, and a June 2017 London Datastore station-address file whose source page describes the LFEPA data as correct to June 2016~\cite{lfb_stations}. The address file is used for historical postcode-level proximity.
 
 The descriptive statistics in \S1.1 were computed directly from this slice. The response diagnostic is the \texttt{FirstPumpArriving\_AttendanceTime} field exceeding 360 seconds among recorded values; borough medians exclude null and out-of-range entries. Borough summaries use the published borough field, not either coordinate family. Precise and rounded coordinates are reserved for the point/grid diagnostics described in \S\ref{sec:background-granularity}. The reproducing notebook is \path{notebooks/01_initial_eda_executed.ipynb}.
 
@@ -80,11 +80,11 @@ The reported work followed a four-phase workflow:
     \item \textbf{Phase 1} (April 2026, completed): data acquisition, exploratory analysis, literature review; closed at the Preliminary Report submission on 30 April 2026.
     \item \textbf{Phase 2} (May--June 2026, completed): dashboard implementation in Flask + D3.js with iterative internal review.
     \item \textbf{Phase 3} (July 2026, completed for this report): evaluation, usability testing, and performance profiling.
-    \item \textbf{Phase 4} (post-report): presentation and any further code-release housekeeping outside the evidence assessed in this report.
+    \item \textbf{Phase 4} (post-report): presentation and any further code-release housekeeping outside this report.
 \end{itemize}
 
 Tooling: Python 3.12 (\texttt{pandas}, \texttt{GeoPandas}) for the analytic backend, D3.js v7~\cite{bostock2011} for client-side visualisation, Flask for the API layer, Git for version control, and Zotero for reference management.
 
 \subsection{Report Structure}
 
-The remainder of this report follows the assessment logic. \S\ref{sec:background} establishes the domain, data, and operating definitions; \S\ref{sec:literature} reviews prior work and derives the design gap; \S4 specifies the artefact; \S5 records its implementation; and \S6 evaluates the results against the research questions. \S7 covers legal, social, ethical, and professional issues, while \S8 concludes. Appendices A--C index reproducibility material and provide the dashboard user guide.
+The remainder of this report follows the assessment logic. \S\ref{sec:background} establishes the domain, data, and operating definitions; \S\ref{sec:literature} reviews prior work and derives the design gap; \S4 specifies the dashboard; \S5 records its implementation; and \S6 evaluates the results against the research questions. \S7 covers legal, social, ethical, and professional issues, while \S8 concludes. Appendices A--C index reproducibility material and provide the dashboard user guide.

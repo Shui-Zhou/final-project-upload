@@ -402,7 +402,7 @@ def plot_system_architecture_overview() -> dict[str, object]:
     pipeline = [
         ((0.05, 0.62), 0.20, "Open data", "LFB records\nONS boundaries", "#eef2ff", "#4f46e5"),
         ((0.31, 0.62), 0.20, "Python build scripts", "Deterministic\nETL + checks", "#ecfeff", "#0891b2"),
-        ((0.57, 0.62), 0.20, "Processed artefacts", "Parquet tables\nsidecar metadata", "#dcfce7", "#16a34a"),
+        ((0.57, 0.62), 0.20, "Processed data", "Parquet tables\nsidecar metadata", "#dcfce7", "#16a34a"),
         ((0.79, 0.62), 0.16, "Flask API", "Aggregate\nJSON routes", "#fee2e2", "#dc2626"),
     ]
     for xy, width, title, body, facecolor, edgecolor in pipeline:
@@ -422,7 +422,7 @@ def plot_system_architecture_overview() -> dict[str, object]:
     ax.text(
         0.50,
         0.35,
-        "Submitted evidence surface",
+        "Project outputs",
         fontsize=11.2,
         weight="bold",
         ha="center",
@@ -432,7 +432,7 @@ def plot_system_architecture_overview() -> dict[str, object]:
 
     outputs = [
         ((0.08, 0.15), "D3 dashboard", "Linked visual\ninspection", "#dbeafe", "#2563eb"),
-        ((0.32, 0.15), "Report figures", "Static evidence\nfor claims", "#fef3c7", "#b45309"),
+        ((0.32, 0.15), "Report figures", "Static charts\nfor analysis", "#fef3c7", "#b45309"),
         ((0.56, 0.15), "Pytest harness", "Schema and API\nregression tests", "#ede9fe", "#7c3aed"),
         ((0.78, 0.15), "Final report", "Narrative and\nlimitations", "#f3f4f6", "#111827"),
     ]
@@ -453,7 +453,7 @@ def plot_system_architecture_overview() -> dict[str, object]:
         "src/data/*.py, src/api/app.py, src/dashboard/*, tests/, report/",
         "Not a data-filtered result; schematic of submitted implementation structure.",
         "Not a data-denominator figure.",
-        "System architecture overview showing the path from open-data inputs through deterministic build scripts and processed artefacts to the Flask API, dashboard, tests, report figures, and final report.",
+        "System architecture overview showing the path from open-data inputs through deterministic build scripts and processed data to the Flask API, dashboard, tests, report figures, and final report.",
         [
             "This figure is a system schematic, not a data result.",
             "It is intentionally distinct from the linked-view dashboard schematic in the Approach chapter.",
