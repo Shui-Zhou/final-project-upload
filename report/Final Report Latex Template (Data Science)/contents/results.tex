@@ -27,11 +27,11 @@ The dashboard treats borough, month, and incident group as the interactive unit.
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.88\textwidth]{figures/results_evaluation/fig_incident_group_response_distribution.png}
-\caption{Incident-group response-time distribution among incidents with recorded first-pump attendance time. Markers show medians, vertical ranges show median--p90 and p90--p95, and the dashed line is the six-minute threshold.}
+\caption{Incident-group response-time distribution among incidents with recorded first-pump attendance time. Markers show medians, vertical ranges show median--p90 and p90--p95, and the dashed line uses six minutes as a descriptive reference.}
 \label{fig:incident-group-response-distribution}
 \end{figure}
 
-The incident-group distribution in Figure~\ref{fig:incident-group-response-distribution} explains why the dashboard keeps incident type in view. Median first-pump response times sit below six minutes for all three groups, but the p90 and p95 values sit above the threshold, so a median-only interface would hide the tail that drives exceedance concerns. Fire incidents have a slightly higher median and tail than false alarms, but all three groups require the same denominator discipline: the plotted statistics use recorded first-pump times only.
+The incident-group distribution in Figure~\ref{fig:incident-group-response-distribution} explains why the dashboard keeps incident type in view. Median first-pump response times sit below six minutes for all three groups, but the p90 and p95 values sit above that reference, so a median-only interface would hide the tail that drives exceedance concerns. Fire incidents have a slightly higher median and tail than false alarms, but all three groups require the same denominator discipline: the plotted statistics use recorded first-pump times only.
 
 \begin{figure}[H]
 \centering
