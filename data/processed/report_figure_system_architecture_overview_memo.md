@@ -10,7 +10,7 @@
 
 ## Suggested Caption
 
-System architecture overview showing the path from open-data inputs through deterministic build scripts and processed artefacts to the Flask API, dashboard, tests, report figures, and final report.
+System architecture overview showing the path from open-data inputs through deterministic build scripts and processed data to the Flask API, dashboard, tests, report figures, and final report.
 
 ## Notes
 

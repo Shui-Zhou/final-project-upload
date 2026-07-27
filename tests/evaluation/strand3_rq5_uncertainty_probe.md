@@ -90,7 +90,7 @@ The rubric is observational, not statistical. Score each item independently.
 
 **§6 anchor:** §6.4 row 3 (second-iteration N5 contract — natural-frequency tooltip phrasing and fuzziness encoding retained as future work).
 
-**No score required** for P6; capture verbatim only. The answer feeds the §8.3 future-work bullet on the second-iteration uncertainty contract.
+**No score required** for P6; capture verbatim only. The answer feeds the §8.3 future-work bullet on improving the uncertainty display.
 
 ## Scoring Aggregation
 
@@ -119,5 +119,5 @@ Append to the same observation-log entry started during Strand 2:
 ## Out of Scope
 
 - Inferential analysis across participants. Strand 3 is qualitative.
-- Modifying §4.4 N5 second-iteration uncertainty contract (fuzziness encoding, natural-frequency tooltips) during the session — these remain implementation work for the second-iteration UI pass.
+- Modifying the proposed second-iteration uncertainty display (fuzziness encoding and natural-frequency tooltips) during the session; these remain future interface work.
 - Any prose change to §6.4 during the session.

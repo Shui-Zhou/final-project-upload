@@ -1,6 +1,6 @@
 \section{Legal, Social, Ethical and Professional Issues}
 
-This chapter sets out the legal, social, ethical, and professional considerations relevant to a public-facing performance dashboard built on London Fire Brigade open data, applying the BCS Code of Conduct and IET Rules of Conduct as the professional reference frame. The emphasis is on the choices that keep the artefact within an exploratory, evidence-led academic scope.
+This section considers licensing, privacy, public interpretation, equity, and professional obligations under the BCS Code of Conduct and IET Rules of Conduct.
 
 \subsection{Data Governance and Open-Data Licensing}
 
@@ -10,20 +10,20 @@ The data-governance position rests on three points: licence terms of the inputs,
     \item \textbf{Licensing of open-data inputs.} The London Datastore pages for the Incident Records, Mobilisation Records, GLA boundary files, and Low Carbon Generators station-address source each state OGL v2~\cite{lfb_incidents,lfb_mobilisations,ons_boundaries,lfb_stations}. OGL permits copying and adaptation with attribution; it does not require the raw files to be withheld. This repository excludes large, frequently refreshed inputs for size and reproducible reacquisition, while retaining publisher URLs and hashes. Maps using the boundary layer carry the source page's Crown copyright/database-right wording.
     \item \textbf{Intellectual property in reproduced figures.} Figures~\ref{fig:panviz-interface}--\ref{fig:taylor-original-closure-probabilities} reproduce only the source panels discussed directly in \S\ref{sec:literature}. Each caption identifies the work and original figure number, the panels are unaltered, and the surrounding text uses them for critical comparison. Complete source articles remain excluded from the repository; reuse outside this report would require a separate rights check.
     \item \textbf{Privacy posture: no PII exposed.} The HTTP surface returns borough aggregates and footprint proxies; the per-incident table is not served. Borough results use the published borough field. Precise coordinates appear only in an aggregate diagnostic figure, while rounded points used for proxy centroids remain server-side.
-    \item \textbf{Provenance retention as an LSEP measure, not just a build hygiene measure.} Every processed artefact carries a provenance JSON recording source SHA-256, build script, transformation list, and constants used. This supports professional accountability because a borough-level claim can be traced back to the open-data release and transformation steps behind it, rather than being treated as a detached dashboard number.
+    \item \textbf{Provenance.} Every processed output carries a JSON record of the source SHA-256, build script, transformations, and constants. A reported borough value can therefore be traced to its open-data release and processing steps.
 \end{itemize}
 
 \subsection{Risks of Public Misinterpretation}
 
-The main public risk is that an exploratory dashboard could be read as an operational tool. The controls below place the relevant qualification next to the affected evidence. Accessibility could still be improved through colour-blind-safe palettes, fuller keyboard navigation, and plain-language uncertainty tooltips.
+The main public risk is that a historical dashboard could be read as an operational tool. The controls below address that risk. Accessibility could still be improved through colour-blind-safe palettes, fuller keyboard navigation, and plain-language uncertainty tooltips.
 
 \begin{itemize}
-    \item \textbf{Risk: dashboard mistaken for an operational dispatch / location-allocation system.} Mitigation: the station surface is labelled as an assignment-footprint proxy, and \path{/api/footprint_scenario} returns the same disclaimer with every response. The project makes no routing, forecasting, or relocation claim.
+    \item \textbf{Risk: dashboard mistaken for an operational dispatch or location-allocation system.} Mitigation: the station endpoint is labelled as an assignment-footprint proxy, and \path{/api/footprint_scenario} returns the same scope note with every response. The Approach chapter lists the operational inputs that are absent.
     \item \textbf{Risk: the 32.4\% diagnostic is read as an official failure rate.} Mitigation: the report labels it author-derived, names the 278{,}468-record denominator, and separates LFB's pan-London average target from the incident-level proportion. The dashboard adds Wilson intervals, small-$n$ warnings, and the partial-month marker.
     \item \textbf{Risk: exposed software surface creates avoidable security expectations.} Mitigation: the implemented surface is read-only and \texttt{GET}-only over non-personal aggregates; \S5.3 records the query-parameter allow-list and HTTP 400 rejection of unknown keys; no user content is persisted or reflected; no authentication is required because no non-public record is served; and dependencies are pinned for reproducible local validation.
     \item \textbf{Risk: borough-level disparity reading interpreted as accusation rather than as an empirical observation.} Mitigation: \S\ref{sec:background-lfb} describes the borough as the LFB performance reporting boundary, not as a unit of fault; §6.1 reports uncertainty bands alongside the central tendency; and §7.3 frames the dashboard as deliberation support rather than a blame assignment.
-    \item \textbf{Risk: cross-boundary mobilisations silently inflate canonical-window claims.} Mitigation: the \path{matches_canonical_incident} flag is persisted on the mobilisation parquet, with the §5.2 join-quality memo documenting the matched-only / unmatched partition and the test suite recomputing the partition by \texttt{isin()} on every test run.
-    \item \textbf{Risk: reproducibility is achieved through wasteful infrastructure.} Mitigation: N2 keeps the artefact single-laptop runnable, with no GPU and no cloud service. Pre-aggregation reduces per-request compute from scanning 293{,}646 incident rows to a 2{,}574-row lookup, supporting the measured 1.1--17.7\,ms API timings; the unfiltered JSON payload is about 1\,MiB; and derived artefacts are rebuilt only when the open-data inputs refresh.
+    \item \textbf{Risk: cross-boundary mobilisations inflate canonical-window summaries.} Mitigation: the \path{matches_canonical_incident} flag is stored in the mobilisation parquet, the §5.2 join-quality memo documents both partitions, and the test suite recomputes them with \texttt{isin()}.
+    \item \textbf{Risk: reproducibility uses unnecessary infrastructure.} Mitigation: N2 keeps the system runnable on one laptop, with no GPU or cloud service. Pre-aggregation reduces each request from a 293{,}646-row scan to a 2{,}574-row lookup; the unfiltered JSON is about 1\,MiB.
 \end{itemize}
 
 \subsection{Distributive Justice and Equity}
@@ -33,7 +33,7 @@ Borough-level response comparisons raise a distributive-justice question, but th
 \begin{itemize}
     \item \textbf{Why surfacing borough-level disparity is itself an ethical choice.} Pereira et al.\ \cite{pereira2017equity} make the political-philosophy point complementary to the optimisation literature: an automated optimum can satisfy aggregate utility while violating distributive-justice constraints that only a deliberative process can specify. The dashboard's role is to surface the disparity so the deliberative process can engage with it, not to recommend a redistribution.
     \item \textbf{No relocation recommendation.} The §5.5 scenario shows an implied assignment shift after removing one label; it neither ranks nor recommends configurations.
-    \item \textbf{Visible qualifications.} The footprint response is labelled exploratory, and the dashboard tooltip names the recorded-time denominator. Natural-frequency wording after \cite{padilla2018} remains a future improvement.
+    \item \textbf{Visible limits.} The footprint response is labelled exploratory, and the dashboard tooltip names the recorded-time denominator. Natural-frequency wording after \cite{padilla2018} remains a future improvement.
 \end{itemize}
 
 \subsection{Professional Codes of Conduct}
@@ -42,7 +42,7 @@ The relevant professional obligations are drawn from the BCS Code of Conduct (\u
 
 \begin{itemize}
     \item \textbf{Public interest and competence.} Keeping the work exploratory and withholding dispatch-routing recommendations reflects the BCS duty to work in the public interest and within professional competence.
-    \item \textbf{Duty to relevant authority.} The thesis keeps the implemented artefact within the approved academic scope: it reports open-data evidence, explains limitations, and avoids implying operational LFB endorsement or deployment readiness.
-    \item \textbf{Duty to the profession.} Reproducible scripts, provenance sidecars, API tests, and visible non-claims provide the professional record needed for independent scrutiny of the method. The same structure also makes future correction possible if an open-data schema or interpretation changes.
-    \item \textbf{Confidentiality and PII.} No participant name, email, or other identifier appears in a submitted artefact. The repository contains the non-identifying aggregate and reusable evaluation instruments, but not per-session notes.
+    \item \textbf{Duty to relevant authority.} The thesis reports open-data results and limitations without implying LFB endorsement or deployment readiness.
+    \item \textbf{Duty to the profession.} Reproducible scripts, provenance sidecars, and API tests allow independent scrutiny and later correction if a source schema or interpretation changes.
+    \item \textbf{Confidentiality and PII.} No participant name, email, or other identifier appears in the submission. The repository contains the non-identifying aggregate and reusable evaluation instruments, but no per-session notes.
 \end{itemize}

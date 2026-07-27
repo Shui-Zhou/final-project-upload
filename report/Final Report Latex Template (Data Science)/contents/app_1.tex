@@ -1,6 +1,6 @@
 \section{Source Code and Reproducibility}
 
-Supplementary artefacts are maintained in the submitted project repository rather than duplicated in full in this appendix. The public repository is \url{https://github.com/Shui-Zhou/final-project-upload}; the assessed source snapshot is the submitted code bundle. The appendix therefore gives the source-code index, selected implementation listings, data-source index, figure index, evaluation artefact index, and dashboard operating guide needed to inspect the submitted artefact. The repository entry points below are sufficient to rebuild the data artefacts, run the dashboard locally, and trace the report's figures and evaluation materials.
+Supplementary files are maintained in the submitted project repository rather than duplicated in full here. The public repository is \url{https://github.com/Shui-Zhou/final-project-upload}; the assessed source snapshot is the submitted code bundle. This appendix indexes the source code, selected listings, data sources, figures, evaluation records, and dashboard operating guide. The listed entry points rebuild the processed data, run the dashboard locally, and trace the report figures and evaluation materials.
 
 \subsection{Source-Code Index}
 
@@ -12,14 +12,14 @@ Path & Purpose \\
 \midrule
 \path{src/data/build_canonical.py} & Builds the canonical incident parquet and its dictionary, provenance, and data-quality memo. \\
 \path{src/data/build_borough_summary.py} & Aggregates the canonical incident table to the cells defined by borough, month, and incident group used by the dashboard. \\
-\path{src/data/build_mobilisations.py} & Builds the mobilisation artefact and persists the \path{matches_canonical_incident} flag used for matched-only deployment claims. \\
+\path{src/data/build_mobilisations.py} & Builds the mobilisation table and persists the \path{matches_canonical_incident} flag used for matched-only deployment summaries. \\
 \path{src/data/build_station_locations.py} & Builds the incident-derived assignment-footprint station centroids. \\
 \path{src/data/build_published_station_proximity.py} & Builds the public station-address postcode-geocoding recovery, D1 comparison table, borough proximity table, and station-proximity figures. \\
 \path{src/data/build_report_evaluation_figures.py} & Builds report-side early-context, results, and robustness figures with JSON/markdown sidecar memos. \\
 \path{src/data/build_closure_cohort_context.py} & Builds the Taylor closure-cohort descriptive cross-check figure, parquet, provenance JSON, and DQ memo. \\
 \path{src/api/app.py} & Flask application factory and JSON API endpoints for borough summaries, boundaries, station footprints, and footprint scenarios. \\
 \path{src/dashboard/dashboard.js} & D3 linked-view dashboard state, rendering, brushing, filtering, and table update logic. \\
-\path{tests/} & Pytest contract tests for data artefacts, API behaviour, mobilisation matching, station footprints, station-address proximity, and report figures. \\
+\path{tests/} & Pytest contract tests for processed data, API behaviour, mobilisation matching, station footprints, station-address proximity, and report figures. \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -75,7 +75,7 @@ path.on("click", (_, feature) => {
 
 \subsection{Reproducibility Commands}
 
-The current artefact set was validated with the following commands from the repository root:
+The current outputs were validated with the following commands from the repository root:
 
 \begin{verbatim}
 python src/data/build_published_station_proximity.py
@@ -99,11 +99,11 @@ The automated verification suite contains 79 pytest tests. The table groups them
 Verification class & Test count & Representative invariants & Edge cases covered \\
 \midrule
 Canonical schema and published baseline bands & 14 & Required raw/derived columns, datetime parsing, response-time seconds/minutes consistency, row/date/borough counts, incident-group taxonomy, false-alarm and exceedance bands, precise/rounded coordinate bands. & Unit regression, coordinate-family regression, incident-group drift. \\
-Borough-summary cross-artefact consistency & 11 & Unique borough/month/group keys, cell count within expected grid, incident-count sum against canonical table, percentile ordering, probability ranges, borough-set match, recorded-time denominator and Wilson-interval checks. & Empty-cell handling, denominator regression, non-monotone percentiles, small-$n$ and partial-month flags. \\
+Borough-summary consistency & 11 & Unique borough/month/group keys, cell count within expected grid, incident-count sum against canonical table, percentile ordering, probability ranges, borough-set match, recorded-time denominator and Wilson-interval checks. & Empty-cell handling, denominator regression, non-monotone percentiles, small-$n$ and partial-month flags. \\
 Mobilisation schema and matched-canonical partition & 18 & Raw/derived mobilisation columns, datetime and attendance-time units, first-arriving-pump logic, join share, first-pump time agreement with canonical incidents, borough/station population, \path{matches_canonical_incident} truth table. & Cross-boundary and unmatched rows kept out of matched-only deployment claims. \\
 API contract and footprint scenario paths & 20 & Health/dashboard/boundary routes, borough-summary schema, filter round-trips, multi-value unions, JSON null safety, station-footprint and footprint-scenario schemas. & HTTP 400 on unknown filter keys, unknown station names, unknown scenario keys, and removing all stations; unknown filter values return empty HTTP 200. \\
 Station-location and public-address invariants & 13 & Incident-derived station centroid count, London coordinate envelopes, non-negative IQRs, centroid-in-own-incident bounding boxes, public station row/geocode counts, known typo corrections, D1 comparison matching, borough proximity completeness. & Prevents footprint centroids being treated as building locations or routing-grade coverage. \\
-Report figure artefacts and sidecars & 3 & Required report-side figures exist, are non-empty, have memo sidecars, and summary metrics keep key borough/coordinate/sensitivity values in expected bands. & Missing figure, stale memo, headline metric drift. \\
+Report figures and sidecars & 3 & Required report-side figures exist, are non-empty, have memo sidecars, and summary metrics keep key borough/coordinate/sensitivity values in expected bands. & Missing figure, stale memo, headline metric drift. \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -112,7 +112,7 @@ Report figure artefacts and sidecars & 3 & Required report-side figures exist, a
 \small
 \begin{tabularx}{\textwidth}{p{3.1cm}Xp{3.2cm}}
 \toprule
-Scripted manual UI check & Expected observation & Evidence retained \\
+Scripted manual UI check & Expected observation & Record retained \\
 \midrule
 Linked selection & Selecting a borough or ranking row updates the map, trend, distribution, metrics, and table from the same state object. & Dashboard overview and component screenshots in \path{figures/dashboard/}. \\
 Empty state & A deliberately unpopulated selection shows the amber empty-state banner instead of leaving broken or stale panels. & \path{fig_dashboard_empty_state.png}. \\
@@ -122,7 +122,7 @@ Responsive layout & The 390\,px mobile viewport has no horizontal overflow; desk
 \end{tabularx}
 \end{center}
 
-\section{Data Sources, Figures, and Evaluation Artefacts}
+\section{Data Sources, Figures, and Evaluation Files}
 
 \subsection{Data Source Index}
 
@@ -133,9 +133,9 @@ Responsive layout & The 390\,px mobile viewport has no horizontal overflow; desk
 Source & Local role & Notes \\
 \midrule
 LFB Incident Records \cite{lfb_incidents} & Primary incident table & 2024-01 to 2026-02 slice; canonicalised into \path{lfb_canonical_2024_2026.parquet}. \\
-LFB Mobilisation Records \cite{lfb_mobilisations} & Appliance-deployment qualifier & Used only through the matched-canonical partition for deployment-side claims. \\
+LFB Mobilisation Records \cite{lfb_mobilisations} & Appliance-deployment context & Used through the matched-canonical partition for deployment summaries. \\
 ONS / GLA borough boundaries \cite{ons_boundaries} & Borough geometry & Used for borough aggregation and choropleth rendering. \\
-LFB public station-address list \cite{lfb_stations} & Station-address proximity context & Postcode-geocoded and treated as postcode-level proximity, not routing-grade station coverage. \\
+LFB public station-address list \cite{lfb_stations} & Station-address proximity context & Historical postcode-geocoded coordinates; road travel times are unavailable. \\
 postcodes.io \cite{postcodesio} & Public postcode geocoder & Used to convert station postcodes to approximate coordinates. \\
 \bottomrule
 \end{tabularx}
@@ -150,7 +150,7 @@ postcodes.io \cite{postcodesio} & Public postcode geocoder & Used to convert sta
 Path & Contents \\
 \midrule
 \path{figures/dashboard/} (report folder) & Six dashboard screenshots: desktop overview, linked selection, trend panel, ranking table, empty-state banner, and mobile viewport. \\
-\path{figures/early_context/} (report folder) & Front-loaded figures: motivation borough map and linked-view wireframe; the earlier coordinate-uncertainty diagram is superseded by the \S\ref{sec:background-granularity} evidence-support matrix (Table~\ref{tab:evidence-support}). \\
+\path{figures/early_context/} (report folder) & Front-loaded figures: motivation borough map and linked-view wireframe; the earlier coordinate-uncertainty diagram is superseded by the fields-by-analysis matrix in \S\ref{sec:background-granularity} (Table~\ref{tab:evidence-support}). \\
 \path{figures/literature/} (report folder) & Three cited literature figures reproduced without alteration: PanViz~2.0 interface structure, MacEachren et al.'s uncertainty visual variables, and Taylor's three-panel closure-probability comparison. \\
 \path{figures/results_evaluation/} (report folder) & Seven results/robustness figures generated from tracked artefacts, including the Taylor closure-cohort descriptive cross-check. \\
 \path{figures/station_proximity/} (report folder) & Two D1 station-address proximity figures used in the evaluation chapter. \\
@@ -158,7 +158,7 @@ Path & Contents \\
 \end{tabularx}
 \end{center}
 
-\subsection{Evaluation Artefacts}
+\subsection{Evaluation Files}
 
 \begin{center}
 \small
@@ -192,7 +192,7 @@ python src/data/build_borough_summary.py
 flask --app src.api.app:create_app run --debug --port 5057
 \end{verbatim}
 
-The two build scripts regenerate the untracked parquet artefacts from the raw LFB workbook under \path{data/}. The raw file is excluded because of repository size and source-refresh cadence, not because OGL v2 forbids redistribution; its URL and SHA-256 are recorded in the provenance sidecar. The dashboard is then served at \path{http://127.0.0.1:5057/dashboard}.
+The two build scripts regenerate the untracked parquet files from the raw LFB workbook under \path{data/}. The raw file is excluded because of repository size and source-refresh cadence, rather than an OGL v2 restriction; its URL and SHA-256 are recorded in the provenance sidecar. The dashboard is then served at \path{http://127.0.0.1:5057/dashboard}.
 
 \subsection{Controls and Linked Behaviour}
 
@@ -211,13 +211,13 @@ If the selected combination has no data, an amber empty-state banner replaces si
 
 The response proportion is computed over incidents with a recorded first-pump time. It is an author-derived diagnostic, not LFB's official incident failure rate. Read the estimate with recorded $n$, its Wilson interval, incident group, and partial-month marker. Precise-coordinate availability does not condition the borough result.
 
-\subsection{What the Station Evidence Does and Does Not Support}
+\subsection{Station Context and Its Limits}
 
-Station evidence is report-side and API-side; the dashboard has no station layer. Assignment footprints locate historical responsibility centroids, not buildings. The postcode coordinates come from a historical source file, not a current estate register.
+Station context appears in the report and API rather than the dashboard. Assignment footprints locate historical responsibility centroids, while the postcode coordinates come from a historical address file. Neither source is a current estate register.
 
 \subsection{Example Task}
 
-To repeat the comparison task in Table~\ref{tab:task-evaluation-matrix}: select \emph{Fire} as the incident group, click \emph{Hillingdon} on the map, note its exceedance share and trend, then click an inner-London row such as \emph{Tower Hamlets} in the ranking table and compare the two boroughs' exceedance values, incident counts, and coordinate-coverage shares before deciding which claims the data supports.
+To repeat the comparison task in Table~\ref{tab:task-evaluation-matrix}: select \emph{Fire} as the incident group, click \emph{Hillingdon} on the map, note its exceedance share and trend, then click an inner-London row such as \emph{Tower Hamlets} in the ranking table and compare the two boroughs' values, recorded denominators, confidence intervals, and incident counts.
 
 \subsection{Known Limitations}
 
