@@ -32,6 +32,9 @@ data/processed/*.arrow
 *.fdb_latexmk
 *.fls
 
+# Local verification/build workspaces
+tmp/
+
 # Local/editor files
 .DS_Store
 __MACOSX/
