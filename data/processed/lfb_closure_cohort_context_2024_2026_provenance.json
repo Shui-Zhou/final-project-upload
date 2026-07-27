@@ -3,9 +3,10 @@
   "schema_version": "1.0",
   "source": {
     "canonical_relative_path": "data/processed/lfb_canonical_2024_2026.parquet",
-    "literature_anchor": "Taylor (2015) spatial survival analysis, project.bib key spatial2015"
+    "literature_anchor": "Taylor (2017) spatial survival analysis, project.bib key spatial2015",
+    "borough_mapping_anchor": "Hackney Council official closure listing: https://news.hackney.gov.uk/news/fire-stations-will-close-following-high-court-ruling"
   },
-  "mapping_review_gate": "REVIEW-GATE: verify station-to-borough mapping against Taylor (2015)/LFB LSP5 before prose is final.",
+  "mapping_validation": "Affected/unaffected status checked against Taylor (2017), pp. 448--449; station-to-borough mapping checked against the official Hackney Council closure listing.",
   "closure_station_borough_mapping": [
     {
       "station": "Belsize",
@@ -24,7 +25,7 @@
     },
     {
       "station": "Knightsbridge",
-      "borough_canonical": "Westminster",
+      "borough_canonical": "Kensington And Chelsea",
       "taylor_status": "affected"
     },
     {
@@ -67,7 +68,7 @@
     "response_time": "non-null FirstPumpArriving_AttendanceTime only"
   },
   "build": {
-    "extracted_at_utc": "2026-07-07T11:49:36.951510+00:00",
+    "extracted_at_utc": "2026-07-27T19:58:54.318990+00:00",
     "script": "src/data/build_closure_cohort_context.py",
     "python_version": "3.13.9",
     "pandas_version": "2.3.3"
@@ -80,16 +81,16 @@
   },
   "summary_by_cohort": {
     "Other borough": {
-      "borough_count": 24,
-      "mean_recorded_time_exceedance_share": 0.3601112216336428,
-      "median_recorded_time_exceedance_share": 0.38751507654736966,
-      "recorded_time_incidents": 176123
+      "borough_count": 23,
+      "mean_recorded_time_exceedance_share": 0.36800325495727076,
+      "median_recorded_time_exceedance_share": 0.39576780097226194,
+      "recorded_time_incidents": 166817
     },
     "Taylor affected-closure borough": {
-      "borough_count": 7,
-      "mean_recorded_time_exceedance_share": 0.28778955717872506,
-      "median_recorded_time_exceedance_share": 0.27837494710114263,
-      "recorded_time_incidents": 81261
+      "borough_count": 8,
+      "mean_recorded_time_exceedance_share": 0.27414016943015945,
+      "median_recorded_time_exceedance_share": 0.272621956309192,
+      "recorded_time_incidents": 90567
     },
     "Taylor unaffected-closure borough": {
       "borough_count": 2,

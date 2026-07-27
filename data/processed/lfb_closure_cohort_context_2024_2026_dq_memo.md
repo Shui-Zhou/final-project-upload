@@ -6,18 +6,19 @@
 
 This memo compares 2024-2026 borough-level recorded-time exceedance shares for boroughs containing stations in Taylor's 2014 closure cohort against other boroughs.
 
-It is descriptive only. Taylor (2015) analyses dwelling fires around 500 m grid squares; this project uses borough-level all-main-incident aggregates. The figure must not be described as causal closure evidence, coverage evidence, or a relocation claim.
+It is descriptive only. Taylor (2017) analyses dwelling fires around 500 m grid squares; this project uses borough-level all-main-incident aggregates. The figure must not be described as causal closure evidence, coverage evidence, or a relocation claim.
 
-## Review Gate
+## Mapping Validation
 
-- REVIEW-GATE: verify the station-to-borough mapping against Taylor (2015)/LFB LSP5 before prose is final.
+- Affected/unaffected status checked against Taylor (2017), pp. 448--449.
+- Station-to-borough mapping checked against the official Hackney Council closure listing; Knightsbridge is mapped to Kensington and Chelsea.
 
 ## Cohort Summary
 
 | Cohort | Boroughs | Mean exceedance | Median exceedance | Recorded-time incidents |
 |---|---:|---:|---:|---:|
-| Other borough | 24 | 36.0% | 38.8% | 176,123 |
-| Taylor affected-closure borough | 7 | 28.8% | 27.8% | 81,261 |
+| Other borough | 23 | 36.8% | 39.6% | 166,817 |
+| Taylor affected-closure borough | 8 | 27.4% | 27.3% | 90,567 |
 | Taylor unaffected-closure borough | 2 | 22.8% | 22.8% | 21,079 |
 
 ## Closure Boroughs
@@ -28,13 +29,14 @@ It is descriptive only. Taylor (2015) analyses dwelling fires around 500 m grid 
 | Greenwich | Woolwich | Taylor affected-closure borough | 32.7% | 8,879 |
 | Hackney | Kingsland | Taylor affected-closure borough | 25.0% | 10,603 |
 | Islington | Clerkenwell | Taylor unaffected-closure borough | 24.5% | 9,404 |
+| Kensington and Chelsea | Knightsbridge | Taylor affected-closure borough | 17.9% | 9,306 |
 | Lewisham | Downham | Taylor affected-closure borough | 31.1% | 10,553 |
 | Newham | Silvertown | Taylor affected-closure borough | 32.2% | 9,249 |
 | Southwark | Southwark | Taylor affected-closure borough | 26.0% | 12,037 |
 | Tower Hamlets | Bow | Taylor unaffected-closure borough | 21.0% | 11,675 |
-| Westminster | Knightsbridge, Westminster | Taylor affected-closure borough | 26.7% | 18,125 |
+| Westminster | Westminster | Taylor affected-closure borough | 26.7% | 18,125 |
 
 ## Other-Borough Range
 
-- Other borough count: 24
-- Other-borough exceedance range: 17.9% to 52.2%.
+- Other borough count: 23
+- Other-borough exceedance range: 19.3% to 52.2%.
