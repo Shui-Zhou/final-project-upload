@@ -1,7 +1,7 @@
-"""Build Taylor (2015) closure-cohort context for the final report.
+"""Build Taylor (2017) closure-cohort context for the final report.
 
 This script computes a descriptive 2024-2026 borough-level cross-check against
-the 2014 station-closure cohort reported by Taylor (2015). It is not a causal
+the 2014 station-closure cohort reported by Taylor (2017). It is not a causal
 model, a coverage model, a relocation claim, or a replication of Taylor's
 500 m dwelling-fire analysis.
 """
@@ -31,12 +31,15 @@ FIGURE_PATH = FIG_DIR / "fig_taylor_closure_cohort_context.png"
 
 INCIDENT_GROUPS = ["False Alarm", "Fire", "Special Service"]
 
-# REVIEW-GATE: verify against Taylor (2015)/LFB LSP5 before prose is final.
+# Affected/unaffected status is transcribed from Taylor (2017), pp. 448--449.
+# Boroughs were checked against the official closure listing published by
+# Hackney Council; the important correction is that Knightsbridge is in
+# Kensington and Chelsea, not Westminster.
 CLOSURE_STATION_BOROUGH_MAPPING = [
     {"station": "Belsize", "borough_canonical": "Camden", "taylor_status": "affected"},
     {"station": "Downham", "borough_canonical": "Lewisham", "taylor_status": "affected"},
     {"station": "Kingsland", "borough_canonical": "Hackney", "taylor_status": "affected"},
-    {"station": "Knightsbridge", "borough_canonical": "Westminster", "taylor_status": "affected"},
+    {"station": "Knightsbridge", "borough_canonical": "Kensington And Chelsea", "taylor_status": "affected"},
     {"station": "Silvertown", "borough_canonical": "Newham", "taylor_status": "affected"},
     {"station": "Southwark", "borough_canonical": "Southwark", "taylor_status": "affected"},
     {"station": "Westminster", "borough_canonical": "Westminster", "taylor_status": "affected"},
@@ -218,7 +221,7 @@ def plot_context(table: pd.DataFrame, summary: dict[str, Any]) -> None:
     ax_strip.set_title("Descriptive cohort comparison")
 
     fig.suptitle(
-        "Taylor (2015) closure cohort as descriptive context, not causal evidence",
+        "Taylor (2017) closure cohort as descriptive context, not causal evidence",
         fontsize=13,
         y=0.99,
     )
@@ -240,10 +243,15 @@ def write_sidecars(table: pd.DataFrame, summary: dict[str, Any]) -> None:
         "schema_version": "1.0",
         "source": {
             "canonical_relative_path": str(CANONICAL_PATH.relative_to(PROJECT_ROOT)),
-            "literature_anchor": "Taylor (2015) spatial survival analysis, project.bib key spatial2015",
+            "literature_anchor": "Taylor (2017) spatial survival analysis, project.bib key spatial2015",
+            "borough_mapping_anchor": (
+                "Hackney Council official closure listing: "
+                "https://news.hackney.gov.uk/news/fire-stations-will-close-following-high-court-ruling"
+            ),
         },
-        "mapping_review_gate": (
-            "REVIEW-GATE: verify station-to-borough mapping against Taylor (2015)/LFB LSP5 before prose is final."
+        "mapping_validation": (
+            "Affected/unaffected status checked against Taylor (2017), pp. 448--449; "
+            "station-to-borough mapping checked against the official Hackney Council closure listing."
         ),
         "closure_station_borough_mapping": CLOSURE_STATION_BOROUGH_MAPPING,
         "filters": {
@@ -292,11 +300,12 @@ def write_sidecars(table: pd.DataFrame, summary: dict[str, Any]) -> None:
         "",
         "This memo compares 2024-2026 borough-level recorded-time exceedance shares for boroughs containing stations in Taylor's 2014 closure cohort against other boroughs.",
         "",
-        "It is descriptive only. Taylor (2015) analyses dwelling fires around 500 m grid squares; this project uses borough-level all-main-incident aggregates. The figure must not be described as causal closure evidence, coverage evidence, or a relocation claim.",
+        "It is descriptive only. Taylor (2017) analyses dwelling fires around 500 m grid squares; this project uses borough-level all-main-incident aggregates. The figure must not be described as causal closure evidence, coverage evidence, or a relocation claim.",
         "",
-        "## Review Gate",
+        "## Mapping Validation",
         "",
-        "- REVIEW-GATE: verify the station-to-borough mapping against Taylor (2015)/LFB LSP5 before prose is final.",
+        "- Affected/unaffected status checked against Taylor (2017), pp. 448--449.",
+        "- Station-to-borough mapping checked against the official Hackney Council closure listing; Knightsbridge is mapped to Kensington and Chelsea.",
         "",
         "## Cohort Summary",
         "",
@@ -354,8 +363,8 @@ def validation_checks(table: pd.DataFrame) -> None:
             "borough_canonical",
         ]
     )
-    if len(affected_boroughs) != 7:
-        raise RuntimeError(f"expected 7 affected-closure boroughs, got {affected_boroughs}")
+    if len(affected_boroughs) != 8:
+        raise RuntimeError(f"expected 8 affected-closure boroughs, got {affected_boroughs}")
     if unaffected_boroughs != {"Tower Hamlets", "Islington"}:
         raise RuntimeError(f"unexpected unaffected-closure boroughs: {unaffected_boroughs}")
     if not FIGURE_PATH.exists() or FIGURE_PATH.stat().st_size < 10_000:
