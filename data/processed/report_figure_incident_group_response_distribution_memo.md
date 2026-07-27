@@ -10,7 +10,7 @@
 
 ## Suggested Caption
 
-Median, p90, and p95 first-pump response times by incident group, with the six-minute threshold shown as a dashed line.
+Median, p90, and p95 first-pump response times by incident group, with six minutes shown as a descriptive reference line.
 
 ## Notes
 

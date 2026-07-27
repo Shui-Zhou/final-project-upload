@@ -791,7 +791,7 @@ def plot_incident_group_distribution(df: pd.DataFrame) -> dict[str, object]:
     ax.scatter(x, stats["median"], s=90, label="Median", color="#0f766e")
     ax.vlines(x, stats["median"], stats["p90"], color="#2a9d8f", lw=8, alpha=0.65, label="Median to p90")
     ax.vlines(x, stats["p90"], stats["p95"], color="#e9c46a", lw=8, alpha=0.8, label="p90 to p95")
-    ax.axhline(6, color="#b91c1c", lw=1.4, ls="--", label="Six-minute threshold")
+    ax.axhline(6, color="#b91c1c", lw=1.4, ls="--", label="Six-minute reference")
     ax.set_xticks(x, [f"{group}\n(n={counts[group]:,})" for group in INCIDENT_GROUPS])
     ax.set_ylabel("First-pump response time (minutes)")
     ax.set_title("Incident-group response-time distribution")
@@ -807,7 +807,7 @@ def plot_incident_group_distribution(df: pd.DataFrame) -> dict[str, object]:
         str(CANONICAL_PATH.relative_to(PROJECT_ROOT)),
         "IncidentGroup in {False Alarm, Fire, Special Service}; response time recorded.",
         "Incidents with non-null `FirstPumpArriving_AttendanceTime`, grouped by incident group.",
-        "Median, p90, and p95 first-pump response times by incident group, with the six-minute threshold shown as a dashed line.",
+        "Median, p90, and p95 first-pump response times by incident group, with six minutes shown as a descriptive reference line.",
         [
             f"Recorded rows used: {len(recorded):,}.",
             "The chart is descriptive; it does not make causal claims about dispatch or routing.",
