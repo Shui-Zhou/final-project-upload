@@ -1,7 +1,7 @@
 # Strand 1 — Heuristic Walk-Through Checklist
 
-> Status: protocol scaffold; no walk-through has been run yet.  
-> Updated: 2026-05-02 (Phase 3 evaluation assets first iteration).
+> Status: completed; findings and closure are recorded in `strand1_findings_summary.md`.
+> Walk-through date: 2026-05-02.
 > Owner: author / internal reviewer (n = 1).  
 > Time budget: ~30 min on a 16 GB MacBook.
 
@@ -15,7 +15,7 @@ This is **not** an empirical result. It is a defect log. Outputs feed (a) `§5.6
 
 1. Pull the latest commit; verify `git status --short` is clean.
 2. Build all data artefacts (`RUNBOOK.md` → "Rebuild Data Artefacts").
-3. Run `python -m pytest tests/ -q`; expect 70 passed.
+3. Run `python -m pytest tests/ -q`; expect 77 passed.
 4. Start dashboard: `flask --app src.api.app:create_app run --debug --port 5057`.
 5. Open `http://127.0.0.1:5057/dashboard` in a clean browser window (no extensions interfering with rendering).
 6. Set viewport to 1440 × 900 desktop and (separately) 390 × 844 mobile.

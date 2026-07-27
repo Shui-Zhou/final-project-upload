@@ -31,6 +31,8 @@ data/processed/*.arrow
 *.acn
 *.fdb_latexmk
 *.fls
+# The repository keeps only the submission-named final PDF; Thesis.pdf is a local build output.
+report/Final Report Latex Template (Data Science)/Thesis.pdf
 
 # Local verification/build workspaces
 tmp/
