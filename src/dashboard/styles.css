@@ -60,11 +60,24 @@ h2 {
 
 .app-bar p,
 .panel-heading p,
-.side-panel > p {
+.side-panel > p,
+.source-note,
+.table-note {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.45;
   margin-top: 6px;
+}
+
+.source-note,
+.table-note {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.table-note {
+  margin-top: 7px;
 }
 
 .controls {

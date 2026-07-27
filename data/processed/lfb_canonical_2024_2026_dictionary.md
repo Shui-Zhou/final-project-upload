@@ -55,7 +55,7 @@
 | `is_weekend` | boolean | 293,646 | derived | True if Saturday or Sunday. |
 | `response_time_seconds` | float64 | 278,468 | derived | Numeric coercion of FirstPumpArriving_AttendanceTime (seconds). |
 | `response_time_minutes` | float64 | 278,468 | derived | response_time_seconds / 60. |
-| `exceeds_six_min_target` | boolean | 278,468 | derived | Nullable boolean. True if response_time_seconds > 360 (the LFB 6-minute first-pump target); False if response_time_seconds <= 360; pd.NA if response_time_seconds is NaN. Downstream `.mean()` therefore returns the share of incidents *with a recorded time* that exceeded the target -- not the share of all incidents (which would silently treat missing-time rows as non-exceedances). |
+| `exceeds_six_min_target` | boolean | 278,468 | derived | Nullable author-defined diagnostic. True if response_time_seconds > 360; False if <= 360; pd.NA if missing. LFB publishes six minutes as a pan-London average target, so this field must not be described as an official per-incident failure flag. |
 | `coord_precise_valid` | bool | 293,646 | derived | True iff Easting_m and Northing_m (the precise per-incident coordinates, withheld by LFB for ~62% of records on privacy grounds) are both present and inside the Greater London OSGB36 bbox. Use for density / kernel-style mapping. |
 | `coord_rounded_valid` | bool | 293,646 | derived | True iff Easting_rounded and Northing_rounded (coordinates rounded to a 100m grid, released for ~100% of records) are both present and inside the Greater London OSGB36 bbox. Use for borough- or grid-level aggregation. |
 | `borough_canonical` | string | 293,646 | derived | IncGeo_BoroughName with whitespace stripped and title-cased to canonicalise capitalisation variants. |

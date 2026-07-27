@@ -10,7 +10,7 @@
     <header class="app-bar">
       <div>
         <h1>LFB Response Atlas</h1>
-        <p>London borough response performance, Jan 2024-Feb 2026</p>
+        <p>London borough response performance, Jan 2024-27 Feb 2026 (final month partial)</p>
       </div>
       <form class="controls" aria-label="Dashboard filters">
         <label>
@@ -46,7 +46,7 @@
             </div>
             <div>
               <span id="metric-exceed">-</span>
-              <small>over 6 min</small>
+              <small>author-derived over 6 min</small>
             </div>
           </div>
         </div>
@@ -58,6 +58,10 @@
           <div id="tooltip" class="tooltip" hidden></div>
         </div>
         <div class="legend" id="map-legend"></div>
+        <p class="source-note">
+          Borough values use the published borough field; precise coordinates are not required.
+          Boundaries contain National Statistics and Ordnance Survey data &copy; Crown copyright and database right 2015.
+        </p>
       </section>
 
       <section class="side-panel timeline-panel" aria-labelledby="timeline-title">
@@ -73,7 +77,7 @@
       <section class="table-panel" aria-labelledby="table-title">
         <div class="panel-heading compact">
           <h2 id="table-title">Borough Ranking</h2>
-          <p>Sorted by six-minute exceedance share</p>
+          <p>Sorted by the author-derived six-minute exceedance diagnostic</p>
         </div>
         <div class="table-scroll">
           <table>
@@ -83,13 +87,15 @@
                 <th>Incidents</th>
                 <th>Median</th>
                 <th>P90</th>
+                <th>Recorded n</th>
                 <th>Over 6 min</th>
-                <th>Precise coords</th>
+                <th>95% CI</th>
               </tr>
             </thead>
             <tbody id="ranking-body"></tbody>
           </table>
         </div>
+        <p class="table-note">Wilson intervals; † recorded n &lt; 30. February 2026 is partial through 27 February.</p>
       </section>
     </main>
 

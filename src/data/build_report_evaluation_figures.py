@@ -47,6 +47,7 @@ WEEKDAY_ORDER = [
     "Sunday",
 ]
 INCIDENT_GROUPS = ["False Alarm", "Fire", "Special Service"]
+WILSON_Z_95 = 1.959963984540054
 
 FIGURES = {
     "system_architecture_overview": ARCHITECTURE_DIR
@@ -81,6 +82,19 @@ def display_borough_name(name: str) -> str:
 
 def normalise_borough_name(name: str) -> str:
     return re.sub(r"[^a-z0-9]", "", name.lower().replace("&", "and"))
+
+
+def wilson_bounds(successes: pd.Series, totals: pd.Series) -> tuple[pd.Series, pd.Series]:
+    n = totals.astype(float)
+    p = successes.astype(float) / n
+    denominator = 1.0 + WILSON_Z_95**2 / n
+    centre = (p + WILSON_Z_95**2 / (2.0 * n)) / denominator
+    half_width = (
+        WILSON_Z_95
+        * np.sqrt((p * (1.0 - p) / n) + WILSON_Z_95**2 / (4.0 * n**2))
+        / denominator
+    )
+    return centre - half_width, centre + half_width
 
 
 def save_figure(path: Path) -> None:
@@ -134,16 +148,21 @@ def load_canonical() -> pd.DataFrame:
 
 def borough_exceedance_table(df: pd.DataFrame) -> pd.DataFrame:
     recorded = df[df["response_time_seconds"].notna()].copy()
-    return (
+    ranking = (
         recorded.groupby("borough_canonical")
         .agg(
             incident_count=("IncidentNumber", "size"),
+            exceedance_count=("exceeds_six_min_target", "sum"),
             exceeds_six_min_share=("exceeds_six_min_target", "mean"),
             median_response_min=("response_time_minutes", "median"),
             precise_coord_share=("coord_precise_valid", "mean"),
         )
         .sort_values("exceeds_six_min_share", ascending=False)
     )
+    ranking["ci95_low"], ranking["ci95_high"] = wilson_bounds(
+        ranking["exceedance_count"], ranking["incident_count"]
+    )
+    return ranking
 
 
 def plot_motivation_borough_exceedance_map(df: pd.DataFrame) -> dict[str, object]:
@@ -228,7 +247,7 @@ def plot_motivation_borough_exceedance_map(df: pd.DataFrame) -> dict[str, object
     bar_ax.set_xlim(0, max(58, top["exceeds_six_min_share"].max() * 115))
     bar_ax.set_ylim(-0.9, len(top) - 0.25)
     fig.suptitle(
-        "Motivating response-performance gap in the 2024-2026 LFB slice",
+        "Borough response-performance disparity in the 2024-2026 LFB slice",
         fontsize=15,
         y=0.98,
     )
@@ -475,7 +494,7 @@ def plot_coordinate_uncertainty_implications(df: pd.DataFrame) -> dict[str, obje
     ax.text(
         0.02,
         0.89,
-        "The precise subset is useful for diagnostic spatial density; the near-complete rounded family is the safer basis for borough ranking and trends.",
+        "Borough rankings use the published borough field. Coordinate availability matters only when the analysis moves to point or grid geography.",
         fontsize=10,
         color="#374151",
     )
@@ -536,8 +555,8 @@ def plot_coordinate_uncertainty_implications(df: pd.DataFrame) -> dict[str, obje
         (0.38, 0.20),
         0.30,
         0.30,
-        "Rounded + borough rows",
-        "Use for borough ranking,\nmonthly trends, and incident-group\ncomparisons where denominator\nstability matters.",
+        "Borough and rounded fields",
+        "Use the borough field for borough\nrankings and trends. Rounded points\ncan support grid diagnostics but still\ncarry displacement error.",
         "#fef3c7",
         "#b45309",
     )
@@ -547,7 +566,7 @@ def plot_coordinate_uncertainty_implications(df: pd.DataFrame) -> dict[str, obje
         0.24,
         0.30,
         "Report implication",
-        "Show coordinate-coverage fields,\nname denominators, and keep\nprecise spatial maps diagnostic.",
+        "Keep precise and rounded point\nlimits beside point-level maps; do not\nattach them to borough estimates.",
         "#e0e7ff",
         "#4338ca",
     )
@@ -571,12 +590,14 @@ def plot_coordinate_uncertainty_implications(df: pd.DataFrame) -> dict[str, obje
         str(CANONICAL_PATH.relative_to(PROJECT_ROOT)),
         "IncidentGroup in {False Alarm, Fire, Special Service}.",
         "All canonical incident rows in the three main incident groups.",
-        "Coordinate-family implication diagram showing why precise-coordinate rows support diagnostic density maps while rounded/borough rows support primary ranking and trend claims.",
+        "Coordinate-family implication diagram separating point-level mapping limits from borough estimates derived from the published borough field.",
         [
             f"Precise-coordinate share: {pct(precise_share)}.",
             f"Suppressed precise-coordinate share: {pct(suppressed_share)}.",
             f"Rounded-coordinate validity share: {pct(rounded_share)}.",
             f"Borough precise-coordinate coverage range: {borough_coverage.min() * 100:.1f}% to {borough_coverage.max() * 100:.1f}%.",
+            "Rounded coordinates may contain displacement error and are not described as bias-free.",
+            "Borough response estimates use borough labels and do not depend on either coordinate family.",
         ],
     )
     return {
@@ -695,9 +716,24 @@ def plot_borough_exceedance_ranking(df: pd.DataFrame) -> dict[str, object]:
     fig, ax = plt.subplots(figsize=(10.5, 7.2))
     colors = plt.cm.YlOrRd(np.linspace(0.45, 0.9, len(top)))
     ax.barh(top.index, top["exceeds_six_min_share"] * 100, color=colors)
+    y = np.arange(len(top))
+    ax.errorbar(
+        top["exceeds_six_min_share"] * 100,
+        y,
+        xerr=np.vstack(
+            [
+                (top["exceeds_six_min_share"] - top["ci95_low"]) * 100,
+                (top["ci95_high"] - top["exceeds_six_min_share"]) * 100,
+            ]
+        ),
+        fmt="none",
+        ecolor="#111827",
+        elinewidth=1.1,
+        capsize=3,
+    )
     ax.axvline(recorded["exceeds_six_min_target"].mean() * 100, color="#264653", lw=1.4)
-    ax.set_xlabel("Incidents exceeding six minutes (%)")
-    ax.set_title("Highest borough exceedance shares among recorded first-pump times")
+    ax.set_xlabel("Recorded first-pump times above six minutes (%)")
+    ax.set_title("Author-derived borough diagnostic with 95% Wilson intervals")
     ax.grid(axis="x", alpha=0.25)
     for idx, (_, row) in enumerate(top.iterrows()):
         ax.text(
@@ -720,17 +756,20 @@ def plot_borough_exceedance_ranking(df: pd.DataFrame) -> dict[str, object]:
         str(CANONICAL_PATH.relative_to(PROJECT_ROOT)),
         "IncidentGroup in {False Alarm, Fire, Special Service}; response time recorded.",
         "Incidents with non-null `FirstPumpArriving_AttendanceTime`, grouped by borough.",
-        "Borough ranking of six-minute exceedance share among incidents with recorded first-pump attendance time; bars are annotated with recorded incident counts.",
+        "Borough ranking of the author-derived share above 360 seconds among incidents with recorded first-pump attendance time; whiskers are 95% Wilson intervals and labels show recorded counts.",
         [
             f"Overall recorded-time exceedance share: {pct(recorded['exceeds_six_min_target'].mean())}.",
             f"Highest borough: {ranking.index[0]} ({pct(leader['exceeds_six_min_share'])}, n={int(leader['incident_count']):,}).",
             f"Lowest borough: {ranking.index[-1]} ({pct(bottom['exceeds_six_min_share'])}, n={int(bottom['incident_count']):,}).",
+            "The six-minute value comes from LFB's pan-London average target; this incident-level proportion is not an official per-incident failure rate.",
         ],
     )
     return {
         "overall_exceedance_share": float(recorded["exceeds_six_min_target"].mean()),
         "top_borough": ranking.index[0],
         "top_borough_exceedance_share": float(leader["exceeds_six_min_share"]),
+        "top_borough_ci95_low": float(leader["ci95_low"]),
+        "top_borough_ci95_high": float(leader["ci95_high"]),
         "bottom_borough": ranking.index[-1],
         "bottom_borough_exceedance_share": float(bottom["exceeds_six_min_share"]),
     }
@@ -796,7 +835,7 @@ def plot_precise_coordinate_coverage(df: pd.DataFrame) -> dict[str, object]:
     ax.barh(coverage.index, coverage["precise_coord_share"] * 100, color=colors)
     ax.axvline(df["coord_precise_valid"].mean() * 100, color="#111827", lw=1.2)
     ax.set_xlabel("Rows with precise coordinates (%)")
-    ax.set_title("Precise-coordinate coverage by borough")
+    ax.set_title("Precise-point availability by borough")
     ax.grid(axis="x", alpha=0.25)
     ax.set_xlim(0, 100)
     fig.tight_layout()
@@ -809,7 +848,7 @@ def plot_precise_coordinate_coverage(df: pd.DataFrame) -> dict[str, object]:
         str(CANONICAL_PATH.relative_to(PROJECT_ROOT)),
         "IncidentGroup in {False Alarm, Fire, Special Service}.",
         "All canonical incident rows in the three main incident groups, grouped by borough.",
-        "Borough-level precise-coordinate coverage; the vertical reference line marks the project-wide precise-coordinate share.",
+        "Borough-level availability of precise incident points; the vertical line marks the project-wide share. This qualifies point-level maps, not borough aggregates.",
         [
             f"Project-wide precise-coordinate share: {pct(df['coord_precise_valid'].mean())}.",
             f"Lowest borough coverage: {coverage.index[0]} ({pct(coverage.iloc[0]['precise_coord_share'])}).",

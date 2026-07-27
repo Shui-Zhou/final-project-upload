@@ -32,10 +32,10 @@
     "join_key": "IncidentNumber"
   },
   "build": {
-    "extracted_at_utc": "2026-05-01T21:25:56.346545+00:00",
+    "extracted_at_utc": "2026-07-27T21:55:39.624216+00:00",
     "script": "src/data/build_mobilisations.py",
-    "python_version": "3.13.9",
-    "pandas_version": "2.3.3"
+    "python_version": "3.12.13",
+    "pandas_version": "3.0.2"
   },
   "row_counts": {
     "input_total_pre_filter": 985753,
@@ -57,7 +57,7 @@
     "Derived exceeds_six_min_target = nullable boolean (pd.NA where time is NaN)",
     "Derived borough_canonical = BoroughName trimmed + title-cased",
     "Derived year_month, mobilised_hour from mobilised_at",
-    "Derived matches_canonical_incident = IncidentNumber present in lfb_canonical_2024_2026 IncidentNumber set, so downstream aggregations can explicitly exclude unmatched cross-boundary records from canonical-window claims"
+    "Derived matches_canonical_incident = IncidentNumber present in lfb_canonical_2024_2026 IncidentNumber set, so downstream aggregations cannot silently mix unmatched rows into canonical-window claims"
   ],
   "constants": {
     "first_pump_target_seconds": 360,
@@ -106,5 +106,5 @@
     "mobilised_hour",
     "matches_canonical_incident"
   ],
-  "scope_note": "This artefact supports response/deployment evidence (deployed-from station, pump order, arrival time). Do not promote it to a station-coverage or dispatch-optimisation claim without separate station-location and travel-time evidence."
+  "scope_note": "This artefact is the mobilisation minimal loop. Use it for response/deployment evidence (deployed-from station, pump order, arrival time). Do not promote to a station-coverage or dispatch-optimisation claim without additional routing-grade inputs."
 }

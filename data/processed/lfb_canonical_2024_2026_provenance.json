@@ -9,7 +9,7 @@
     "publisher_url": "https://data.london.gov.uk/dataset/london-fire-brigade-incident-records"
   },
   "build": {
-    "extracted_at_utc": "2026-05-01T12:30:57.144567+00:00",
+    "extracted_at_utc": "2026-07-27T21:55:41.283880+00:00",
     "script": "src/data/build_canonical.py",
     "python_version": "3.12.13",
     "pandas_version": "3.0.2"
@@ -24,7 +24,7 @@
     "Derived: hour_of_day from TimeOfCall",
     "Derived: year_month, day_of_week, weekday_name, is_weekend",
     "Derived: response_time_seconds (alias) + response_time_minutes",
-    "Derived: exceeds_six_min_target = response_time_seconds > 360 (nullable boolean: pd.NA where response_time_seconds is NaN, so downstream mean() correctly skips missing-time rows)",
+    "Derived: exceeds_six_min_target = response_time_seconds > 360 (nullable author-defined diagnostic; pd.NA where response_time_seconds is missing)",
     "Derived: coord_precise_valid = Easting_m + Northing_m both within Greater London bbox (precise per-incident, ~37.9%)",
     "Derived: coord_rounded_valid = Easting_rounded + Northing_rounded both within Greater London bbox (100m grid, ~100%)",
     "Derived: borough_canonical = IncGeo_BoroughName trimmed + title-cased"

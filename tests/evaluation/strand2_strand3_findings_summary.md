@@ -2,7 +2,7 @@
 
 > Status: completed compact think-aloud evaluation.
 > Updated: 2026-07-07.
-> Scope: aggregate, non-identifying summary only. Full per-session notes are not committed.
+> Scope: aggregate, non-identifying summary only. Per-session notes are not present in the submitted workspace, so the participant rows cannot be checked against raw logs here.
 
 ## Method
 
@@ -14,13 +14,13 @@ No sensitive personal data was collected for this summary. The evaluation is rep
 
 | Participant | Observed behaviour | Interpretation for the dashboard evidence |
 |---|---|---|
-| Participant 1 | Compared boroughs mainly through the map and ranking table, then used the monthly trend to check whether the selected pattern was persistent. Noticed the coordinate-coverage column only after prompting. | Linked views supported borough comparison, but coordinate-coverage meaning needed a clearer label or tooltip. |
-| Participant 2 | Quickly used the distribution panel to compare median and high-tail response times, but initially read the six-minute exceedance share as applying to all incidents rather than recorded first-pump times only. | The six-minute metric was useful for comparison, but denominator wording needed to be more explicit. |
-| Participant 3 | Treated the station context cautiously once shown the footprint/proximity explanation, but first described it in broader coverage language. Asked for a plain-language note separating historical assignment footprints from operational station coverage. | The station layer needs persistent caveat text; without it, the dashboard can invite overclaiming. |
+| Participant 1 | Map-first path; all tasks completed; Hillingdon selected; tooltip used for the recorded-time denominator. | Colour cue was checked against the table/tooltip; station-coverage overclaim avoided. |
+| Participant 2 | Table-first path; Tasks 1–3 completed; one prompt needed for the month comparison; the “precise coords” label was queried. | Exact values were useful, but denominator and station-proximity wording needed work. |
+| Participant 3 | Trend-first path; all tasks completed; judgement stated as tentative; missing response times volunteered. | Comparison was qualified; coordinate coverage remained probe-dependent and the dashboard alone was not read as station coverage. |
 
 ## Cross-Participant Pattern
 
-The sessions partially confirmed the theory-derived expectation that linked views and visible caveats can support qualified comparison. Participants could move between borough map, trend, distribution, and ranking views, but denominator interpretation and station-coverage caveats still required explicit prompts.
+The aggregate record indicates that participants used different starting panels and still reached qualified borough comparisons. Denominator and station-context wording required prompts. Because raw session notes are absent from the workspace, these participant-level details should not be treated as independently reproducible evidence.
 
 ## Limits
 

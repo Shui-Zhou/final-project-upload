@@ -2,12 +2,12 @@
 
 \subsection{Background and Motivation}
 
-Urban emergency response is a core urban-informatics problem because access to public services is both spatially unequal and time-sensitive; the choice of accessibility measure can materially change conclusions about equity~\cite{talen1998,pereira2017equity}. Open data can improve accountability, but denominators, missing values, spatial disclosure control, and operational caveats can still make a simple map look more authoritative than its evidence allows. LFB publishes detailed incident records~\cite{lfb_incidents} and a six-minute first-pump attendance standard~\cite{lfb_attendance}. Earlier public-facing LFB visualisations include a GOV.UK performance prototype and the ODI station-closure map~\cite{govuk2014,odi2013}; both predate the present 2024--2026 window and neither exposes response-time denominators and coordinate completeness together. The 293{,}646-incident slice used here therefore motivates a current, auditable visual-analytics view in which response patterns and their limitations remain visible together.
+Urban emergency response is a core urban-informatics problem because access to public services is spatially uneven and time-sensitive; the choice of measure can change the conclusion~\cite{talen1998,pereira2017equity}. Open data can improve accountability, but denominators, missing values, disclosure control, and operational caveats can make a simple map look more authoritative than its evidence allows. LFB publishes incident records~\cite{lfb_incidents} and a six-minute pan-London average first-appliance target~\cite{lfb_attendance}. Earlier public-facing LFB visualisations include a GOV.UK performance prototype and the ODI station-closure map~\cite{govuk2014,odi2013}; neither brings response-time denominators and spatial-data limits into the same view. The 293{,}646-incident slice used here motivates an auditable view in which response patterns and their limitations remain visible together.
 
-Initial exploratory analysis of the most recent 26 months of LFB incident data (January 2024--February 2026, 293{,}646 records) confirms three motivating problems for this project:
+Initial exploratory analysis of LFB incident data from January 2024 to 27 February 2026 (293{,}646 records; final month partial) confirms three motivating problems:
 
 \begin{itemize}
-    \item \textbf{A consistent service-equity gap.} 32.4\% of incidents with recorded first-pump attendance time exceed the published six-minute benchmark~\cite{lfb_attendance}. The highest recorded-time exceedance shares are in outer-London boroughs including Hillingdon (52.2\%), Bromley (47.6\%), and Richmond upon Thames (45.2\%), while several inner-London boroughs sit below the London-wide reference line.
+    \item \textbf{A response-performance disparity.} The author's incident-level diagnostic finds that 32.4\% of recorded first-pump times exceed 360 seconds. This uses the numerical value of LFB's pan-London average target~\cite{lfb_attendance}; it is not an official failure rate. Hillingdon (52.2\%), Bromley (47.6\%), and Richmond upon Thames (45.2\%) have the highest recorded-time shares.
     \item \textbf{A resource-utilisation question.} False alarms account for 46.5\% of incidents and consume more pumps per incident on average (1.9) than fires (1.7). This workload can alter how borough response rankings are interpreted, so it must be available as a filter and sensitivity check rather than hidden inside the total.
     \item \textbf{A spatial data-quality problem.} Only 37.9\% of records carry precise coordinates; the remainder are available through a rounded coordinate family in the LFB release~\cite{lfb_incidents}. Street-level analysis must therefore expose coordinate completeness rather than silently treating the precise subset as the full incident population (\S\ref{sec:background-granularity}).
 \end{itemize}
@@ -22,7 +22,7 @@ These motivating numbers are summarised in Table~\ref{tab:motivation}; the data 
 Metric & Value & Interpretation \\
 \midrule
 Total incidents (Jan 2024 -- Feb 2026) & 293{,}646 & Dataset scope \\
-First-pump attendance $>$ 6 minutes & 32.4\% & Service-equity motivation \\
+Recorded first-pump times $>$ 6 minutes & 32.4\% & Response-performance disparity \\
 False alarms (share of all incidents) & 46.5\% & Resource-utilisation question \\
 Records with precise (non-suppressed) coordinates & 37.9\% & Spatial-analysis limitation \\
 \bottomrule
@@ -34,15 +34,15 @@ Records with precise (non-suppressed) coordinates & 37.9\% & Spatial-analysis li
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{figures/early_context/fig_motivation_borough_exceedance_map.png}
-\caption{Motivating borough-level response-performance gap, calculated by the author from LFB Incident Records~\cite{lfb_incidents}. The vertical line marks the project-wide recorded-time exceedance share.}
+\caption{Borough-level response-performance disparity, calculated by the author from LFB Incident Records~\cite{lfb_incidents}. The map and bars show the incident-level share above 360 seconds among recorded first-pump times; this is not LFB's official performance measure. Boundary layer: Contains National Statistics data and Ordnance Survey data © Crown copyright and database right 2015~\cite{ons_boundaries}.}
 \label{fig:motivation-borough-exceedance-map}
 \end{figure}
 
-Together, these measured gaps and the limitations of earlier public-facing tools frame the project's contribution.
+Together, these disparities and the limitations of earlier public-facing tools frame the project's contribution.
 
 \subsection{Aims and Objectives}
 
-The project aim is to design, build, and evaluate a web-based interactive visual analytics dashboard that helps users ask more defensible questions of LFB open data: where workload and response-time pressure appear together, how strongly those patterns depend on incident type and time, and what caveats are required before a map is interpreted as operational evidence. The dashboard targets two \emph{potential} stakeholder profiles: (a) LFB and Greater London Authority planners exploring borough-level evidence for discussion, and (b) academic and policy researchers studying urban emergency response equity. Operational adoption by either group is outside this project's scope; evaluation is limited to usability and analytical interpretability rather than operational decision validation (\S4.6).
+The project aim is to design, build, and evaluate a web dashboard for structured inspection of LFB open data: where workload and response-time pressure appear together, how patterns vary by incident type and time, and which limitations affect each claim. Potential users are public-service analysts and researchers comparing borough response performance. The evaluation covers analytical interpretation, not operational adoption.
 
 The concrete objectives are:
 
@@ -59,7 +59,7 @@ The initial project brief listed five example questions. This thesis consolidate
 
 \begin{enumerate}
     \item \textbf{Primary RQ.} How can an uncertainty-aware visual analytics dashboard support structured inspection of London Fire Brigade incident demand and first-pump response performance using public open data?
-    \item \textbf{RQ1.} Which boroughs, incident groups, and time periods show persistent incident demand or six-minute first-pump attendance exceedance patterns in the 2024--2026 LFB open-data slice?
+    \item \textbf{RQ1.} Which boroughs, incident groups, and time periods show persistent incident demand or author-derived six-minute exceedance patterns in the 2024--2026 LFB open-data slice?
     \item \textbf{RQ2.} How do mobilisation records, false-alarm workload, coordinate suppression, missing response times, and station-address evidence qualify the interpretation of those patterns?
     \item \textbf{RQ3.} To what extent do the linked dashboard and report evidence package help users make useful but qualified analytical judgements without overstating station coverage, routing, or relocation claims?
 \end{enumerate}
@@ -68,9 +68,9 @@ The questions have distinct evidential roles. RQ1 is descriptive: borough-month 
 
 \subsection{Data Sources and Conventions}
 
-The primary dataset is the \textbf{LFB Incident Records} open dataset \cite{lfb_incidents} published on the London Datastore, used here as the 2024-01 to 2026-02 slice (293{,}646 rows $\times$ 39 columns, 63\,MB). The implementation also uses the ONS / GLA borough boundary layer \cite{ons_boundaries}, LFB mobilisation records \cite{lfb_mobilisations}, incident-derived borough and station footprint centroids, and a London Datastore public fire-station address list \cite{lfb_stations} whose postcodes are geocoded for a bounded station-proximity check in \S5.6. The address list is not treated as a routing-grade station entrance dataset. All currently-used data are open and require no institutional access.
+The primary dataset is the \textbf{LFB Incident Records} open dataset \cite{lfb_incidents}, used here from 2024-01 to 27 February 2026 (293{,}646 rows $\times$ 39 source columns, 63\,MB). The implementation also uses the GLA borough boundary layer \cite{ons_boundaries}, LFB mobilisation records \cite{lfb_mobilisations}, incident-derived borough and station-footprint centroids, and a June 2017 London Datastore station-address file whose source page describes the LFEPA data as correct to June 2016~\cite{lfb_stations}. That historical address file supports a bounded proximity check, not a current station register or routing-grade entrance dataset.
 
-The descriptive statistics quoted in \S1.1 were computed directly from this slice. Response-time exceedance is the \texttt{FirstPumpArriving\_AttendanceTime} field exceeding 360 seconds~\cite{lfb_attendance}; precise coordinates are non-null \texttt{Easting\_m} / \texttt{Northing\_m} values within the Greater London bounding box; and borough medians exclude null and out-of-range entries. The reproducing notebook is \path{notebooks/01_initial_eda_executed.ipynb}. Because precise-coordinate suppression may vary by borough, incident type, or time, borough analysis uses the near-complete rounded family and the dashboard exposes per-borough precise-coordinate coverage (\S\ref{sec:background-granularity}).
+The descriptive statistics in \S1.1 were computed directly from this slice. The response diagnostic is the \texttt{FirstPumpArriving\_AttendanceTime} field exceeding 360 seconds among recorded values; borough medians exclude null and out-of-range entries. Borough summaries use the published borough field, not either coordinate family. Precise and rounded coordinates are reserved for the point/grid diagnostics described in \S\ref{sec:background-granularity}. The reproducing notebook is \path{notebooks/01_initial_eda_executed.ipynb}.
 
 \subsection{Methodology Overview}
 

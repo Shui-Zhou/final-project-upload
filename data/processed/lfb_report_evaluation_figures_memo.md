@@ -26,6 +26,8 @@ These artefacts are report-side system/data evaluation evidence. They do not con
     "bottom_borough_exceedance_share": 0.17859445519019987,
     "overall_exceedance_share": 0.3243770267504121,
     "top_borough": "Hillingdon",
+    "top_borough_ci95_high": 0.5321896380623825,
+    "top_borough_ci95_low": 0.5116620986456131,
     "top_borough_exceedance_share": 0.5219351291918637
   },
   "coordinate_coverage": {

@@ -74,7 +74,7 @@ Blocker findings (must be fixed before participant Strand-2 sessions begin):
 
 Reference: `strand2_thinkaloud_task_script.md`.
 
-### Task 1 — SQ3 demand side, was RQ1 (highest incident demand)
+### Task 1 — SQ3 demand side, was RQ1 (compare displayed incident counts)
 
 - Completed: yes / partial / no
 - Time: __ min
@@ -83,23 +83,23 @@ Reference: `strand2_thinkaloud_task_script.md`.
 - Friction observed:
 - §6 anchor: §6.1 row 1, §6.1 row 2
 
-### Task 2 — SQ1, was RQ2 (above- vs below-target borough)
+### Task 2 — SQ1, was RQ2 (compare author-derived six-minute diagnostic)
 
 - Completed: yes / partial / no
 - Time: __ min
-- Used 6-min target reference: yes / no / unclear
+- Treated diagnostic as official per-incident failure rate: yes / no / unclear
 - Noticed missing-time cells: yes / no / not encountered
 - Verbatim quote(s):
 - §6 anchor: §6.1 row 1, §6.4 row 2
 - Optional appliance-level interpretive answer (if asked): verbatim
 
-### Task 3 — SQ3, was RQ3 (risk-response gap triage judgement + caveat)
+### Task 3 — SQ3, was RQ3 (response-performance comparison + caveat)
 
 - Completed: yes / partial / no
 - Time: __ min
 - Primary source: ranking table / choropleth / both / other
 - Asked for bivariate map: yes / no
-- Cited precise-coordinate coverage spontaneously: yes / no
+- Used recorded n / 95% CI / partial-month flag: yes / no
 - Verbatim quote(s):
 - §6 anchor: §6.2 row 4
 
@@ -119,7 +119,7 @@ Reference: `strand3_rq5_uncertainty_probe.md`.
 
 | Item | Score (0/1/2) | Verbatim |
 |---|---|---|
-| P1 — precise-coordinate coverage column |  |  |
+| P1 — historical precise-coordinate column (evaluated build only) |  |  |
 | P2 — missing time |  |  |
 | P3 — empty cells |  |  |
 | P4 — footprint label |  |  |

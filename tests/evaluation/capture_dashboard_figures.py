@@ -64,7 +64,7 @@ def main():
         )
 
         # 2c. Component-level ranking table capture with the
-        #     precise-coordinate-coverage column (the SQ4 data-quality cue).
+        #     recorded denominator and 95% interval columns.
         page.add_style_tag(
             content="""
             .table-panel { max-height: none !important; }

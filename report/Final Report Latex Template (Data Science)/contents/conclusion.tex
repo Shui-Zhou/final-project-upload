@@ -13,9 +13,9 @@ The primary research question asked how an uncertainty-aware visual analytics da
 \toprule
 Question & Answer \\
 \midrule
-RQ1 & The 2024--2026 incident records show substantial borough, incident-type, and time variation, with 32.4\% of recorded first-pump attendance times exceeding six minutes and false alarms forming the largest incident group at 46.5\%. The highest borough exceedance shares are concentrated in outer London, and the pattern remains stable when false alarms are excluded. \\
-RQ2 & The headline patterns require qualification. Mobilisation records support matched-only deployment claims over 438{,}211 rows; coordinate suppression limits street-level spatial claims; missing first-pump times define the response denominator; and the station-address recovery supports proximity context without becoming routing-grade coverage evidence. \\
-RQ3 & The implemented linked map, trend, distribution, and ranking views support a qualified comparison workflow, especially because the ranking table gives exact values beside the map and the tooltip now names the recorded-time denominator. The evaluation evidence demonstrates design readiness, traceability, and early task-based interpretability; broader participant testing would be needed to validate user effectiveness with confidence. \\
+RQ1 & The incident records show borough, incident-type, and time variation. The author's recorded-time share above 360 seconds is 32.4\% (95\% CI 32.3--32.6\%); it is not LFB's official incident failure rate. False alarms form 46.5\% of incidents, and the borough ranking is stable when they are excluded. \\
+RQ2 & Response variability, response-time missingness, coordinate/proxy error, and finite-sample uncertainty require separate treatment. Mobilisation claims use 438{,}211 matched rows; coordinate availability limits point-level maps but not borough aggregates; the historical station-address file supports proximity context only. \\
+RQ3 & The linked views support borough comparison, with recorded denominators, Wilson intervals, small-$n$ warnings, and a partial-month marker. F1--F5 are partial. The user evaluation is formative, includes unsupported original task wording, and cannot be re-audited at session level from the submitted workspace. \\
 \bottomrule
 \end{tabularx}
 \caption{Answers to the research questions.}
@@ -30,7 +30,7 @@ The deliberate non-claims are equally important. The project does not optimise s
 
 \subsection{Future Work}
 
-The highest-value follow-up is to broaden the Strand 2/3 evaluation with more participants and domain-expert review. Additional socio-economic borough context, such as population density or deprivation indicators, could also be added as a future context layer once its interpretation is separated clearly from the present response-performance evidence. The second technical priority is front-end integration of the station-related caveat: either keep the footprint layer as a clearly labelled demand-footprint view, or expose the public station-address proximity layer separately, never as coverage. Further technical work includes fuller natural-frequency uncertainty wording, fuzziness/value encodings for lower-confidence spatial cells, a fuller quantile-dotplot distribution pane, and a routing-grade accessibility model only if road-network travel-time validation becomes available.
+Future work should begin with a reproducible evaluation package: retained anonymised session records, supported tasks, and a larger sample. Technical priorities are direct demand ranking, the deferred filters, a fuller response distribution, and a station view only if a current verified location source is available. Point-level uncertainty encodings and routing models remain future work because they are not implemented here.
 
 \subsection{Lessons Learned}
 

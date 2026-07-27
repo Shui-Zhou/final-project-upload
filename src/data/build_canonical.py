@@ -50,7 +50,7 @@ GL_EASTING_MAX = 565_000
 GL_NORTHING_MIN = 155_000
 GL_NORTHING_MAX = 210_000
 
-# LFB attendance-target threshold for the first pump, in seconds.
+# Numerical reference taken from LFB's pan-London average first-appliance target.
 FIRST_PUMP_TARGET_SECONDS = 360  # = 6 minutes
 
 # ---------------------------------------------------------------------------
@@ -181,7 +181,7 @@ def write_provenance(
             "Derived: hour_of_day from TimeOfCall",
             "Derived: year_month, day_of_week, weekday_name, is_weekend",
             "Derived: response_time_seconds (alias) + response_time_minutes",
-            "Derived: exceeds_six_min_target = response_time_seconds > 360 (nullable boolean: pd.NA where response_time_seconds is NaN, so downstream mean() correctly skips missing-time rows)",
+            "Derived: exceeds_six_min_target = response_time_seconds > 360 (nullable author-defined diagnostic; pd.NA where response_time_seconds is missing)",
             "Derived: coord_precise_valid = Easting_m + Northing_m both within Greater London bbox (precise per-incident, ~37.9%)",
             "Derived: coord_rounded_valid = Easting_rounded + Northing_rounded both within Greater London bbox (100m grid, ~100%)",
             "Derived: borough_canonical = IncGeo_BoroughName trimmed + title-cased",
@@ -210,7 +210,7 @@ def write_dictionary(df: pd.DataFrame) -> None:
         "is_weekend": "True if Saturday or Sunday.",
         "response_time_seconds": "Numeric coercion of FirstPumpArriving_AttendanceTime (seconds).",
         "response_time_minutes": "response_time_seconds / 60.",
-        "exceeds_six_min_target": "Nullable boolean. True if response_time_seconds > 360 (the LFB 6-minute first-pump target); False if response_time_seconds <= 360; pd.NA if response_time_seconds is NaN. Downstream `.mean()` therefore returns the share of incidents *with a recorded time* that exceeded the target -- not the share of all incidents (which would silently treat missing-time rows as non-exceedances).",
+        "exceeds_six_min_target": "Nullable author-defined diagnostic. True if response_time_seconds > 360; False if <= 360; pd.NA if missing. LFB publishes six minutes as a pan-London average target, so this field must not be described as an official per-incident failure flag.",
         "coord_precise_valid": "True iff Easting_m and Northing_m (the precise per-incident coordinates, withheld by LFB for ~62% of records on privacy grounds) are both present and inside the Greater London OSGB36 bbox. Use for density / kernel-style mapping.",
         "coord_rounded_valid": "True iff Easting_rounded and Northing_rounded (coordinates rounded to a 100m grid, released for ~100% of records) are both present and inside the Greater London OSGB36 bbox. Use for borough- or grid-level aggregation.",
         "borough_canonical": "IncGeo_BoroughName with whitespace stripped and title-cased to canonicalise capitalisation variants.",
@@ -280,7 +280,7 @@ def write_dq_memo(df: pd.DataFrame, raw_rows: int) -> None:
     lines.append(f"- **Records with precise per-incident coordinates** (`Easting_m` / `Northing_m`, used for kernel-density mapping): {coord_precise_pct:.1f}\\%. The remaining ~{100 - coord_precise_pct:.0f}\\% have these fields withheld by LFB for privacy.")
     lines.append(f"- **Records with rounded 100\\,m-grid coordinates** (`Easting_rounded` / `Northing_rounded`, used for borough- or grid-level aggregation): {coord_rounded_pct:.1f}\\%.")
     lines.append(f"- **Records with a recorded first-pump attendance time**: {rt_present_pct:.1f}\\%.")
-    lines.append(f"- **First-pump time exceeds the 6-minute target** (among records with a recorded time): {exceed_among_present:.1f}\\%.")
+    lines.append(f"- **Author-derived share above 360 seconds** (among records with a recorded time; not an official per-incident failure rate): {exceed_among_present:.1f}\\%.")
     lines.append("")
     lines.append("## Incident-group composition")
     lines.append("")
@@ -298,7 +298,7 @@ def write_dq_memo(df: pd.DataFrame, raw_rows: int) -> None:
     lines.append("")
     lines.append("## Known limitations to surface in the dashboard")
     lines.append("")
-    lines.append("1. **Two coordinate families exist and must not be conflated.** `Easting_m` / `Northing_m` (precise) is withheld for ~62\\% of records on privacy grounds; `Easting_rounded` / `Northing_rounded` (100\\,m grid) is released for ~100\\%. Borough- and ward-level analysis can use the rounded family without bias; kernel-density and street-level mapping must use the precise family and acknowledge the 62\\% gap as missing-not-at-random (incidents in dense central areas, where individuals are more identifiable, are more likely to have their precise coordinates suppressed).")
+    lines.append("1. **Two coordinate families exist and must not be conflated.** Precise coordinates are unavailable for about 62\\% of rows and may be systematically missing. Rounded coordinates are nearly complete but introduce displacement and are not assumed bias-free. Borough summaries use the published borough field directly; coordinate limitations apply to point/grid analysis.")
     lines.append("2. **Response time recorded in seconds despite the column name not stating units**. The canonical adds `response_time_seconds` and `response_time_minutes` to remove ambiguity in downstream code.")
     lines.append("3. **2014 closure cohort cannot be directly cross-checked from this slice** because the time window (2024--2026) is entirely post-closure. Comparison to Taylor's pre/post-closure modelling (\\S2.4) is therefore qualitative; cross-check against the borough-level effect direction, not the absolute level.")
     lines.append("4. **NumPumpsAttending is per-incident**, not per-mobilisation. Multi-mobilisation analyses (e.g.\\ how many pumps were eventually deployed for a sustained fire) require joining the LFB Mobilisation Records dataset, which is out of scope for this canonical.")

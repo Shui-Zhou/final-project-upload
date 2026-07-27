@@ -1,6 +1,6 @@
 {
   "artefact": "lfb_borough_summary_2024_2026",
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "source": {
     "filename": "lfb_canonical_2024_2026.parquet",
     "relative_path": "data/processed/lfb_canonical_2024_2026.parquet",
@@ -8,7 +8,7 @@
     "upstream_artefact": "lfb_canonical_2024_2026"
   },
   "build": {
-    "extracted_at_utc": "2026-05-01T12:31:21.850727+00:00",
+    "extracted_at_utc": "2026-07-27T21:55:45.626207+00:00",
     "script": "src/data/build_borough_summary.py",
     "python_version": "3.12.13",
     "pandas_version": "3.0.2"
@@ -26,7 +26,11 @@
     "incident_count = size of group",
     "response_time_min_{mean,median,p90,p95} over response_time_minutes",
     "response_time_recorded_share = share of group with non-null response_time_seconds",
-    "exceeds_six_min_share = mean of exceeds_six_min_target boolean",
+    "response_time_recorded_count = count of non-null response_time_seconds",
+    "exceeds_six_min_share/count = author-derived incident-level diagnostic above 360 seconds among recorded first-pump times",
+    "exceeds_six_min_ci95_{low,high} = two-sided 95% Wilson interval for that proportion",
+    "small_sample_warning = response_time_recorded_count < 30",
+    "is_partial_month = true for the latest month when DateOfCall does not reach its calendar month end",
     "num_pumps_mean = mean NumPumpsAttending",
     "coord_precise_share, coord_rounded_share = mean of the two coord-validity booleans",
     "distinct_ground_stations = nunique IncidentStationGround in group"
@@ -41,10 +45,16 @@
     "response_time_min_p90",
     "response_time_min_p95",
     "response_time_recorded_share",
+    "response_time_recorded_count",
     "exceeds_six_min_share",
+    "exceeds_six_min_count",
     "num_pumps_mean",
     "coord_precise_share",
     "coord_rounded_share",
-    "distinct_ground_stations"
+    "distinct_ground_stations",
+    "exceeds_six_min_ci95_low",
+    "exceeds_six_min_ci95_high",
+    "small_sample_warning",
+    "is_partial_month"
   ]
 }

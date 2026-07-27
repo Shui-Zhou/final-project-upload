@@ -22,7 +22,13 @@ REQUIRED_COLUMNS = {
     "response_time_min_p90",
     "response_time_min_p95",
     "response_time_recorded_share",
+    "response_time_recorded_count",
     "exceeds_six_min_share",
+    "exceeds_six_min_count",
+    "exceeds_six_min_ci95_low",
+    "exceeds_six_min_ci95_high",
+    "small_sample_warning",
+    "is_partial_month",
     "num_pumps_mean",
     "coord_precise_share",
     "coord_rounded_share",
@@ -170,3 +176,46 @@ def test_exceeds_six_min_share_uses_recorded_time_denominator(
         f"global weighted share {weighted_share:.4f} differs from canonical "
         f"{canonical_share:.4f} by more than 0.001"
     )
+
+
+def test_recorded_counts_and_wilson_intervals_match_canonical(
+    borough_summary: pd.DataFrame, canonical: pd.DataFrame
+) -> None:
+    frame = canonical.dropna(
+        subset=["borough_canonical", "year_month", "IncidentGroup"]
+    ).copy()
+    expected = (
+        frame.groupby(
+            ["borough_canonical", "year_month", "IncidentGroup"], observed=True
+        )
+        .agg(
+            expected_recorded=("response_time_seconds", lambda s: int(s.notna().sum())),
+            expected_exceed=("exceeds_six_min_target", lambda s: int(s.dropna().sum())),
+        )
+        .reset_index()
+    )
+    merged = borough_summary.merge(
+        expected,
+        on=["borough_canonical", "year_month", "IncidentGroup"],
+        how="left",
+        validate="one_to_one",
+    )
+    assert (merged["response_time_recorded_count"] == merged["expected_recorded"]).all()
+    assert (merged["exceeds_six_min_count"] == merged["expected_exceed"]).all()
+    assert (
+        merged["exceeds_six_min_ci95_low"] <= merged["exceeds_six_min_share"]
+    ).all()
+    assert (
+        merged["exceeds_six_min_share"] <= merged["exceeds_six_min_ci95_high"]
+    ).all()
+
+
+def test_small_sample_and_partial_month_flags(borough_summary: pd.DataFrame) -> None:
+    assert borough_summary["small_sample_warning"].equals(
+        borough_summary["response_time_recorded_count"] < 30
+    )
+    partial = borough_summary.loc[borough_summary["is_partial_month"], "year_month"]
+    assert set(partial) == {"2026-02"}
+    assert not borough_summary.loc[
+        borough_summary["year_month"] != "2026-02", "is_partial_month"
+    ].any()

@@ -5,6 +5,7 @@
 > Owner: facilitator (Joe).  
 > Conducted: immediately after the four Strand-2 tasks, before the Lab Questionnaire and debrief.  
 > Time budget: ≤ 5 min per participant.
+> Version note: the evaluated build displayed a precise-coordinate column. The current dashboard replaces that borough-table column with recorded n and a Wilson interval because coordinate availability does not condition borough aggregates.
 
 ## Purpose
 
@@ -31,19 +32,19 @@ The rubric is observational, not statistical. Score each item independently.
 
 ## Probe Items
 
-### P1 — Precise-coordinate-coverage column (ranking table) [SQ4]
+### P1 — Historical precise-coordinate column (evaluated build only) [SQ4]
 
 **Prompt (read aloud):**
 > "In the ranking table at the bottom, there's a column that reports a percentage per borough. Did you notice it during the tasks? What did you take it to mean?"
 
-**§6 anchor:** §6.4 row 1 (precise-coord coverage as the ranking-table 'exposure' half of the §3.3 / §4.4 contract).
+**§6 anchor:** historical prompt retained for an honest record of the evaluated build; it is not a task for the current dashboard.
 
-**Score-2 example:** participant says "yes, I noticed Westminster's precise-coordinate coverage was lower so I treated its choropleth fill more cautiously."
+**Retrospective interpretation:** this prompt linked coordinate availability to a borough aggregate that does not depend on coordinates. The current dashboard removes the column; the historical response is retained only as evidence that the original cue could mislead.
 
 ### P2 — Missing first-pump-time denominator [SQ4]
 
 **Prompt:**
-> "The 6-minute exceedance share — for example, '32.4 % of incidents'. Of *which* incidents? Did the dashboard tell you anywhere?"
+> "The author-derived 6-minute diagnostic — for example, 32.4%. Of which incidents is it a proportion, and is it an official per-incident failure rate?"
 
 **Follow-up if needed:**
 > "If a borough had a particular month with no recorded response time, do you know what the dashboard does with it?"
@@ -52,7 +53,7 @@ The rubric is observational, not statistical. Score each item independently.
 
 **Score-2 example:** participant correctly identifies that the share is computed only over incidents with a recorded time (278,468 of 293,646), not all incidents.
 
-### P3 — Borough-month cells with no data [SQ4]
+### P3 — Hypothetical empty-state design prompt [SQ4]
 
 > **Protocol note:** the 2024-01–2026-02 slice has **no** empty borough-month-group cell (2,574/2,574 populated, zero null medians, API-verified), so the original "did you encounter a blank panel" wording can never trigger. The prompt is therefore hypothetical; the empty-state banner itself is verified working via forced selection.
 
@@ -61,7 +62,7 @@ The rubric is observational, not statistical. Score each item independently.
 
 **§6 anchor:** §6.3 row 1 (empty-state behaviour, verified by forced-selection test), §6.4 row 1.
 
-### P4 — Footprint-scenario disclaimer [SQ5]
+### P4 — Report-package station prompt, not a dashboard task [SQ5]
 
 > **Protocol note:** the dashboard screen renders **no station-related element** (0 DOM matches; the footprint UI toggle is deferred), so the prompt is two-part: first "dashboard alone", then anchored to the two §6 station figures, which the facilitator shows on paper or a second screen.
 
@@ -73,7 +74,7 @@ The rubric is observational, not statistical. Score each item independently.
 
 **Score-2 example:** participant explicitly distinguishes "where the station's incidents historically happened" from "where the building is" and refuses to make a coverage claim.
 
-### P5 — Mobilisation matched-only caveat (interpretive) [SQ4]
+### P5 — Report/data-governance prompt, not a dashboard task [SQ4]
 
 **Prompt:**
 > "If I told you the underlying mobilisation data has 1,763 cross-boundary records — appliances dispatched outside the 33 London boroughs — would you expect those to be in or out of the borough-level numbers you've been reading?"
@@ -98,7 +99,7 @@ After all six items are administered, the facilitator computes per-participant t
 - Items P1–P5: each scored 0 / 1 / 2 → range 0–10.
 - Item P6: verbatim only, no numeric score.
 
-A participant total is **descriptive**, not a usability index. Use it only for the §6.4 write-up's qualitative banding (e.g., "P02 noticed the precise-coordinate coverage column without prompting; P03 noticed only after probing"). No statistical comparison across participants is in scope.
+A participant total is **descriptive**, not a usability index. P1 belongs to the evaluated historical build and must not be used to qualify current borough estimates. No statistical comparison across participants is in scope.
 
 ## Output Format
 
@@ -106,7 +107,7 @@ Append to the same observation-log entry started during Strand 2:
 
 ```
 ## SQ4/SQ5 (was RQ5) Probe — P0X
-- P1 (precise-coordinate coverage column):  score / verbatim
+- P1 (historical precise-coordinate column):  score / verbatim
 - P2 (missing time):     score / verbatim
 - P3 (empty cells):      score / verbatim
 - P4 (footprint label):  score / verbatim

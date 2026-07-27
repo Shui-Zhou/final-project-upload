@@ -10,7 +10,7 @@
 
 ## Suggested Caption
 
-Coordinate-family implication diagram showing why precise-coordinate rows support diagnostic density maps while rounded/borough rows support primary ranking and trend claims.
+Coordinate-family implication diagram separating point-level mapping limits from borough estimates derived from the published borough field.
 
 ## Notes
 
@@ -18,3 +18,5 @@ Coordinate-family implication diagram showing why precise-coordinate rows suppor
 - Suppressed precise-coordinate share: 62.1%.
 - Rounded-coordinate validity share: 100.0%.
 - Borough precise-coordinate coverage range: 26.3% to 86.0%.
+- Rounded coordinates may contain displacement error and are not described as bias-free.
+- Borough response estimates use borough labels and do not depend on either coordinate family.

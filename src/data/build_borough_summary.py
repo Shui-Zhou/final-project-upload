@@ -23,6 +23,7 @@ Purpose:
 
 from __future__ import annotations
 
+import calendar
 import datetime as dt
 import hashlib
 import json
@@ -40,6 +41,8 @@ OUT_DICTIONARY = OUT_DIR / "lfb_borough_summary_2024_2026_dictionary.md"
 OUT_PROVENANCE = OUT_DIR / "lfb_borough_summary_2024_2026_provenance.json"
 
 GROUP_KEYS = ["borough_canonical", "year_month", "IncidentGroup"]
+SMALL_SAMPLE_RECORDED_N = 30
+WILSON_Z_95 = 1.959963984540054
 
 
 def sha256_of(path: Path) -> str:
@@ -55,6 +58,23 @@ def percentile(series: pd.Series, q: float) -> float:
     if series.empty:
         return float("nan")
     return float(np.quantile(series, q))
+
+
+def wilson_interval(successes: pd.Series, totals: pd.Series) -> tuple[pd.Series, pd.Series]:
+    """Return the two-sided 95% Wilson interval for binomial proportions."""
+    n = totals.astype(float)
+    k = successes.astype(float)
+    valid = n > 0
+    p = pd.Series(np.nan, index=n.index, dtype=float)
+    p.loc[valid] = k.loc[valid] / n.loc[valid]
+    denominator = 1.0 + (WILSON_Z_95**2 / n)
+    centre = (p + WILSON_Z_95**2 / (2.0 * n)) / denominator
+    half_width = (
+        WILSON_Z_95
+        * np.sqrt((p * (1.0 - p) / n) + (WILSON_Z_95**2 / (4.0 * n**2)))
+        / denominator
+    )
+    return (centre - half_width).clip(lower=0.0), (centre + half_width).clip(upper=1.0)
 
 
 def aggregate(df: pd.DataFrame) -> pd.DataFrame:
@@ -80,6 +100,10 @@ def aggregate(df: pd.DataFrame) -> pd.DataFrame:
             "response_time_seconds",
             lambda s: float(s.notna().mean()),
         ),
+        response_time_recorded_count=(
+            "response_time_seconds",
+            lambda s: int(s.notna().sum()),
+        ),
         # `exceeds_six_min_target` is a nullable boolean in the canonical
         # (pd.NA where response_time_seconds is missing). pandas' `.mean()`
         # skips NA, so this aggregation correctly returns the share of cells
@@ -89,6 +113,10 @@ def aggregate(df: pd.DataFrame) -> pd.DataFrame:
             "exceeds_six_min_target",
             "mean",
         ),
+        exceeds_six_min_count=(
+            "exceeds_six_min_target",
+            lambda s: int(s.dropna().sum()),
+        ),
         num_pumps_mean=("NumPumpsAttending", "mean"),
         coord_precise_share=("coord_precise_valid", "mean"),
         coord_rounded_share=("coord_rounded_valid", "mean"),
@@ -97,6 +125,26 @@ def aggregate(df: pd.DataFrame) -> pd.DataFrame:
             lambda s: int(s.dropna().nunique()),
         ),
     ).reset_index()
+
+    ci_low, ci_high = wilson_interval(
+        summary["exceeds_six_min_count"], summary["response_time_recorded_count"]
+    )
+    summary["exceeds_six_min_ci95_low"] = ci_low
+    summary["exceeds_six_min_ci95_high"] = ci_high
+    summary["small_sample_warning"] = (
+        summary["response_time_recorded_count"] < SMALL_SAMPLE_RECORDED_N
+    )
+
+    latest_date = pd.to_datetime(df["DateOfCall"], errors="coerce").max()
+    partial_month = None
+    if pd.notna(latest_date):
+        latest_date = pd.Timestamp(latest_date).normalize()
+        final_day = calendar.monthrange(latest_date.year, latest_date.month)[1]
+        if latest_date.day < final_day:
+            partial_month = latest_date.strftime("%Y-%m")
+    summary["is_partial_month"] = (
+        summary["year_month"].eq(partial_month) if partial_month else False
+    )
 
     # Sort for deterministic output across rebuilds.
     summary = summary.sort_values(GROUP_KEYS).reset_index(drop=True)
@@ -119,7 +167,7 @@ def write_provenance(
     extracted_at = dt.datetime.now(dt.timezone.utc).isoformat()
     provenance = {
         "artefact": "lfb_borough_summary_2024_2026",
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "source": {
             "filename": canonical_path.name,
             "relative_path": str(canonical_path.relative_to(PROJECT_ROOT)),
@@ -141,7 +189,11 @@ def write_provenance(
             "incident_count = size of group",
             "response_time_min_{mean,median,p90,p95} over response_time_minutes",
             "response_time_recorded_share = share of group with non-null response_time_seconds",
-            "exceeds_six_min_share = mean of exceeds_six_min_target boolean",
+            "response_time_recorded_count = count of non-null response_time_seconds",
+            "exceeds_six_min_share/count = author-derived incident-level diagnostic above 360 seconds among recorded first-pump times",
+            "exceeds_six_min_ci95_{low,high} = two-sided 95% Wilson interval for that proportion",
+            f"small_sample_warning = response_time_recorded_count < {SMALL_SAMPLE_RECORDED_N}",
+            "is_partial_month = true for the latest month when DateOfCall does not reach its calendar month end",
             "num_pumps_mean = mean NumPumpsAttending",
             "coord_precise_share, coord_rounded_share = mean of the two coord-validity booleans",
             "distinct_ground_stations = nunique IncidentStationGround in group",
@@ -163,7 +215,13 @@ def write_dictionary(summary: pd.DataFrame) -> None:
         "response_time_min_p90": "90th percentile of first-pump response time (minutes).",
         "response_time_min_p95": "95th percentile of first-pump response time (minutes).",
         "response_time_recorded_share": "Share of incidents in the cell with a recorded first-pump time.",
-        "exceeds_six_min_share": "Share of incidents *with a recorded first-pump time* whose first pump exceeded the 6-minute target. The denominator is `incident_count * response_time_recorded_share`, NOT `incident_count`. This is enforced by the canonical's `exceeds_six_min_target` column being a nullable boolean (pd.NA where response_time is missing) so that `.mean()` skips missing-time rows.",
+        "response_time_recorded_count": "Count of incidents in the cell with a recorded first-pump time.",
+        "exceeds_six_min_share": "Author-derived share of incidents *with a recorded first-pump time* whose first-pump time exceeded 360 seconds. This uses the numerical value of LFB's pan-London average target; it is not an official per-incident failure rate.",
+        "exceeds_six_min_count": "Numerator for exceeds_six_min_share: recorded first-pump times above 360 seconds.",
+        "exceeds_six_min_ci95_low": "Lower endpoint of the two-sided 95% Wilson confidence interval for exceeds_six_min_share.",
+        "exceeds_six_min_ci95_high": "Upper endpoint of the two-sided 95% Wilson confidence interval for exceeds_six_min_share.",
+        "small_sample_warning": f"True when response_time_recorded_count is below the descriptive display threshold of {SMALL_SAMPLE_RECORDED_N}.",
+        "is_partial_month": "True for the latest observed month when the source ends before that calendar month's final day.",
         "num_pumps_mean": "Mean NumPumpsAttending in the cell.",
         "coord_precise_share": "Share of incidents in the cell with valid precise coordinates (Easting_m / Northing_m).",
         "coord_rounded_share": "Share of incidents with valid rounded 100m-grid coordinates.",
@@ -231,7 +289,22 @@ def validation_checks(summary: pd.DataFrame, canonical_rows: int) -> None:
         "exceeds_six_min_share outside [0, 1]"
     )
 
-    # 6. coord_rounded_share is consistently 1.0 across all cells (rounded
+    # 6. Counts, intervals, and display flags must agree exactly.
+    assert (summary["response_time_recorded_count"] <= summary["incident_count"]).all()
+    assert (summary["exceeds_six_min_count"] <= summary["response_time_recorded_count"]).all()
+    assert (
+        summary["exceeds_six_min_ci95_low"] <= summary["exceeds_six_min_share"]
+    ).all()
+    assert (
+        summary["exceeds_six_min_share"] <= summary["exceeds_six_min_ci95_high"]
+    ).all()
+    assert summary["small_sample_warning"].equals(
+        summary["response_time_recorded_count"] < SMALL_SAMPLE_RECORDED_N
+    )
+    partial_months = summary.loc[summary["is_partial_month"], "year_month"].unique()
+    assert len(partial_months) <= 1, "more than one month marked partial"
+
+    # 7. coord_rounded_share is consistently 1.0 across all cells (rounded
     # coordinates are released for 100% of records, so every cell should be
     # at exactly 1.0 give or take floating-point noise).
     coord_rounded_min = float(summary["coord_rounded_share"].min())

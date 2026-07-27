@@ -9,38 +9,38 @@
 
 | Column | Dtype | Non-null | Source | Notes |
 |---|---|---|---|---|
-| `IncidentNumber` | object | 439,974 | raw (LFB Mobilisation Records) |  |
+| `IncidentNumber` | str | 439,974 | raw (LFB Mobilisation Records) |  |
 | `CalYear` | int64 | 439,974 | raw (LFB Mobilisation Records) |  |
-| `BoroughName` | object | 438,454 | raw (LFB Mobilisation Records) |  |
-| `WardName` | object | 437,725 | raw (LFB Mobilisation Records) |  |
+| `BoroughName` | str | 438,454 | raw (LFB Mobilisation Records) |  |
+| `WardName` | str | 437,725 | raw (LFB Mobilisation Records) |  |
 | `HourOfCall` | int64 | 439,974 | raw (LFB Mobilisation Records) |  |
 | `ResourceMobilisationId` | int64 | 439,974 | raw (LFB Mobilisation Records) |  |
-| `Resource_Code` | object | 439,974 | raw (LFB Mobilisation Records) |  |
-| `PerformanceReporting` | object | 439,974 | raw (LFB Mobilisation Records) |  |
-| `DateAndTimeMobilised` | object | 439,974 | raw (LFB Mobilisation Records) |  |
-| `DateAndTimeMobile` | object | 437,915 | raw (LFB Mobilisation Records) |  |
-| `DateAndTimeArrived` | object | 439,974 | raw (LFB Mobilisation Records) |  |
+| `Resource_Code` | str | 439,974 | raw (LFB Mobilisation Records) |  |
+| `PerformanceReporting` | str | 439,974 | raw (LFB Mobilisation Records) |  |
+| `DateAndTimeMobilised` | str | 439,974 | raw (LFB Mobilisation Records) |  |
+| `DateAndTimeMobile` | str | 437,915 | raw (LFB Mobilisation Records) |  |
+| `DateAndTimeArrived` | str | 439,974 | raw (LFB Mobilisation Records) |  |
 | `TurnoutTimeSeconds` | float64 | 437,914 | raw (LFB Mobilisation Records) |  |
 | `TravelTimeSeconds` | float64 | 437,898 | raw (LFB Mobilisation Records) |  |
 | `AttendanceTimeSeconds` | int64 | 439,974 | raw (LFB Mobilisation Records) |  |
-| `DateAndTimeLeft` | object | 439,775 | raw (LFB Mobilisation Records) |  |
+| `DateAndTimeLeft` | str | 439,775 | raw (LFB Mobilisation Records) |  |
 | `DateAndTimeReturned` | object | 1 | raw (LFB Mobilisation Records) |  |
-| `DeployedFromStation_Code` | object | 439,973 | raw (LFB Mobilisation Records) |  |
-| `DeployedFromStation_Name` | object | 439,973 | raw (LFB Mobilisation Records) |  |
-| `DeployedFromLocation` | object | 439,375 | raw (LFB Mobilisation Records) |  |
+| `DeployedFromStation_Code` | str | 439,973 | raw (LFB Mobilisation Records) |  |
+| `DeployedFromStation_Name` | str | 439,973 | raw (LFB Mobilisation Records) |  |
+| `DeployedFromLocation` | str | 439,375 | raw (LFB Mobilisation Records) |  |
 | `PumpOrder` | int64 | 439,974 | raw (LFB Mobilisation Records) |  |
-| `PlusCode_Code` | object | 439,974 | raw (LFB Mobilisation Records) |  |
-| `PlusCode_Description` | object | 439,974 | raw (LFB Mobilisation Records) |  |
+| `PlusCode_Code` | str | 439,974 | raw (LFB Mobilisation Records) |  |
+| `PlusCode_Description` | str | 439,974 | raw (LFB Mobilisation Records) |  |
 | `DelayCodeId` | float64 | 119,095 | raw (LFB Mobilisation Records) |  |
-| `DelayCode_Description` | object | 119,095 | raw (LFB Mobilisation Records) |  |
-| `mobilised_at` | datetime64[ns] | 439,974 | derived | Parsed DateAndTimeMobilised (datetime, dayfirst=True, GMT per LFB notes). |
-| `mobile_at` | datetime64[ns] | 437,915 | derived | Parsed DateAndTimeMobile. |
-| `arrived_at` | datetime64[ns] | 439,974 | derived | Parsed DateAndTimeArrived. |
+| `DelayCode_Description` | str | 119,095 | raw (LFB Mobilisation Records) |  |
+| `mobilised_at` | datetime64[us] | 439,974 | derived | Parsed DateAndTimeMobilised (datetime, dayfirst=True, GMT per LFB notes). |
+| `mobile_at` | datetime64[us] | 437,915 | derived | Parsed DateAndTimeMobile. |
+| `arrived_at` | datetime64[us] | 439,974 | derived | Parsed DateAndTimeArrived. |
 | `attendance_time_seconds` | int64 | 439,974 | derived | Numeric coercion of AttendanceTimeSeconds (turn-out + travel, seconds). |
 | `attendance_time_minutes` | float64 | 439,974 | derived | attendance_time_seconds / 60. |
-| `is_first_arriving_pump` | boolean | 439,974 | derived | True where PerformanceReporting == '1' (LFB's first-arriving-pump flag, used for the 6-minute target metric and matched against the incident-record FirstPumpArriving_AttendanceTime field). |
+| `is_first_arriving_pump` | bool[pyarrow] | 439,974 | derived | True where PerformanceReporting == '1' (LFB's first-arriving-pump flag, matched against the incident-record FirstPumpArriving_AttendanceTime field). |
 | `is_first_ordered_pump` | bool | 439,974 | derived | True where PumpOrder == 1 (first pump in the despatch order; not always the first to arrive). |
-| `exceeds_six_min_target` | boolean | 439,974 | derived | Nullable boolean: True if attendance_time_seconds > 360, False if <=360, pd.NA if missing. Same semantics as the canonical incident artefact. |
+| `exceeds_six_min_target` | boolean | 439,974 | derived | Nullable author-defined diagnostic: True if attendance_time_seconds > 360, False if <=360, pd.NA if missing. It is not an official per-mobilisation failure flag. |
 | `borough_canonical` | string | 438,454 | derived | BoroughName trimmed + title-cased; matches the canonical incident artefact's borough_canonical. |
 | `year_month` | string | 439,974 | derived | Year-month period of mobilised_at as 'YYYY-MM'. |
 | `mobilised_hour` | Int8 | 439,974 | derived | Hour-of-day (0--23) of mobilised_at. |

@@ -10,7 +10,7 @@
 
 ## Suggested Caption
 
-Borough-level precise-coordinate coverage; the vertical reference line marks the project-wide precise-coordinate share.
+Borough-level availability of precise incident points; the vertical line marks the project-wide share. This qualifies point-level maps, not borough aggregates.
 
 ## Notes
 

@@ -90,7 +90,7 @@ The broader rebuild sequence is documented in \path{RUNBOOK.md}. Binary raw inpu
 
 \subsection{Verification Test Matrix}
 
-The automated verification suite contains 77 pytest tests. The table groups them by the validation class they support; counts are taken from the current \path{tests/test_*.py} functions rather than estimated from prose.
+The automated verification suite contains 79 pytest tests. The table groups them by the validation class they support; counts are taken from the current \path{tests/test_*.py} functions rather than estimated from prose.
 
 \begin{center}
 \small
@@ -99,7 +99,7 @@ The automated verification suite contains 77 pytest tests. The table groups them
 Verification class & Test count & Representative invariants & Edge cases covered \\
 \midrule
 Canonical schema and published baseline bands & 14 & Required raw/derived columns, datetime parsing, response-time seconds/minutes consistency, row/date/borough counts, incident-group taxonomy, false-alarm and exceedance bands, precise/rounded coordinate bands. & Unit regression, coordinate-family regression, incident-group drift. \\
-Borough-summary cross-artefact consistency & 9 & Unique borough/month/group keys, cell count within expected grid, incident-count sum against canonical table, percentile ordering, probability ranges, borough-set match, recorded-time denominator regression. & Empty-cell handling, denominator regression, non-monotone percentiles. \\
+Borough-summary cross-artefact consistency & 11 & Unique borough/month/group keys, cell count within expected grid, incident-count sum against canonical table, percentile ordering, probability ranges, borough-set match, recorded-time denominator and Wilson-interval checks. & Empty-cell handling, denominator regression, non-monotone percentiles, small-$n$ and partial-month flags. \\
 Mobilisation schema and matched-canonical partition & 18 & Raw/derived mobilisation columns, datetime and attendance-time units, first-arriving-pump logic, join share, first-pump time agreement with canonical incidents, borough/station population, \path{matches_canonical_incident} truth table. & Cross-boundary and unmatched rows kept out of matched-only deployment claims. \\
 API contract and footprint scenario paths & 20 & Health/dashboard/boundary routes, borough-summary schema, filter round-trips, multi-value unions, JSON null safety, station-footprint and footprint-scenario schemas. & HTTP 400 on unknown filter keys, unknown station names, unknown scenario keys, and removing all stations; unknown filter values return empty HTTP 200. \\
 Station-location and public-address invariants & 13 & Incident-derived station centroid count, London coordinate envelopes, non-negative IQRs, centroid-in-own-incident bounding boxes, public station row/geocode counts, known typo corrections, D1 comparison matching, borough proximity completeness. & Prevents footprint centroids being treated as building locations or routing-grade coverage. \\
@@ -192,28 +192,28 @@ python src/data/build_borough_summary.py
 flask --app src.api.app:create_app run --debug --port 5057
 \end{verbatim}
 
-The two build scripts regenerate the untracked parquet artefacts from the raw LFB workbook, which must be present under \path{data/} (it is excluded from version control for licensing reasons; its source URL and SHA-256 are recorded in the provenance sidecar). The boundary GeoJSON is tracked directly. The dashboard is then served at \path{http://127.0.0.1:5057/dashboard}.
+The two build scripts regenerate the untracked parquet artefacts from the raw LFB workbook under \path{data/}. The raw file is excluded because of repository size and source-refresh cadence, not because OGL v2 forbids redistribution; its URL and SHA-256 are recorded in the provenance sidecar. The dashboard is then served at \path{http://127.0.0.1:5057/dashboard}.
 
 \subsection{Controls and Linked Behaviour}
 
 The interface holds one shared selection state: \emph{borough $\times$ month $\times$ incident group}. It can be changed three ways: the three select controls at the top, clicking a borough on the map, or clicking a row in the ranking table. Any change re-renders all four panels together:
 
 \begin{itemize}
-    \item \textbf{Borough map (choropleth).} Fill colour encodes the six-minute exceedance share for the selected month and incident group. Hovering a borough shows its incident count, median and p90 response times, denominator-qualified exceedance share, and precise-coordinate coverage.
-    \item \textbf{Monthly trend panel.} Incident count and exceedance share for the selected borough and group across the full 26-month slice.
+    \item \textbf{Borough map (choropleth).} Fill colour encodes the author-derived share above 360 seconds for the selected month and incident group. Hover shows incident count, median, p90, recorded denominator, and 95\% Wilson interval.
+    \item \textbf{Monthly trend panel.} Incident count and the response diagnostic across 25 complete months plus partial February 2026.
     \item \textbf{Response-distribution panel.} Median-to-p95 response-time ranges for the three incident groups in the selected cell, against the dashed six-minute reference line.
-    \item \textbf{Ranking table.} Boroughs ordered by exceedance share for the selected month and group, with exact values and the per-borough precise-coordinate coverage column.
+    \item \textbf{Ranking table.} Boroughs ordered by the response diagnostic, with recorded $n$, 95\% interval, and small-sample marker.
 \end{itemize}
 
 If the selected combination has no data, an amber empty-state banner replaces silent blank panels; adjusting any filter recovers a populated view.
 
 \subsection{How to Read the Values}
 
-Exceedance shares are computed over incidents \emph{with a recorded first-pump attendance time}, not over all incidents; the ranking table's coordinate-coverage column reports how much of each borough's data carries precise coordinates (37.9\% overall). A defensible comparison therefore reads three things together: the exceedance value, the incident count behind it, and the coverage share. A high-exceedance borough with a small count or low coverage deserves a weaker claim.
+The response proportion is computed over incidents with a recorded first-pump time. It is an author-derived diagnostic, not LFB's official incident failure rate. Read the estimate with recorded $n$, its Wilson interval, incident group, and partial-month marker. Precise-coordinate availability does not condition the borough result.
 
 \subsection{What the Station Evidence Does and Does Not Support}
 
-Station-related evidence in this project is report-side and API-side, not an interactive map layer: the current dashboard screen does not render station markers, and the footprint-scenario UI toggle is not implemented in this iteration (\S6.3). The assignment-footprint artefact locates each station's \emph{historical incident responsibility centroid}, not its building; the public station-address table adds postcode-level proximity context only. Neither supports coverage, routing, or relocation conclusions (\S5.5--\S5.6, \S6.2).
+Station evidence is report-side and API-side; the dashboard has no station layer. Assignment footprints locate historical responsibility centroids, not buildings. The postcode coordinates come from a historical source file, not a current estate register.
 
 \subsection{Example Task}
 
@@ -221,4 +221,4 @@ To repeat the comparison task in Table~\ref{tab:task-evaluation-matrix}: select 
 
 \subsection{Known Limitations}
 
-The current dashboard still has no one-click reset to the all-London default, and the fuller uncertainty encodings described in \S6.5 remain second-iteration work. The station-related evidence is also intentionally separated from the live dashboard screen because the project does not implement a routing-grade station-coverage model.
+The dashboard has no one-click reset, direct demand ranking, year/weekday/hour filters, full response distribution, or station UI. These omissions are recorded as partial requirements in Table~\ref{tab:req-traceability}.

@@ -60,7 +60,7 @@ OUT_DICTIONARY = OUT_DIR / "lfb_mobilisations_2024_2026_dictionary.md"
 OUT_DQ_MEMO = OUT_DIR / "lfb_mobilisations_2024_2026_dq_memo.md"
 OUT_JOIN_MEMO = OUT_DIR / "lfb_mobilisations_2024_2026_join_quality_memo.md"
 
-# LFB performance-target threshold for the first-arriving pump, in seconds.
+# Numerical reference taken from LFB's pan-London average first-appliance target.
 # Same constant as in build_canonical.py.
 FIRST_PUMP_TARGET_SECONDS = 360  # = 6 minutes
 
@@ -253,9 +253,9 @@ def write_dictionary(df: pd.DataFrame) -> None:
         "arrived_at": "Parsed DateAndTimeArrived.",
         "attendance_time_seconds": "Numeric coercion of AttendanceTimeSeconds (turn-out + travel, seconds).",
         "attendance_time_minutes": "attendance_time_seconds / 60.",
-        "is_first_arriving_pump": "True where PerformanceReporting == '1' (LFB's first-arriving-pump flag, used for the 6-minute target metric and matched against the incident-record FirstPumpArriving_AttendanceTime field).",
+        "is_first_arriving_pump": "True where PerformanceReporting == '1' (LFB's first-arriving-pump flag, matched against the incident-record FirstPumpArriving_AttendanceTime field).",
         "is_first_ordered_pump": "True where PumpOrder == 1 (first pump in the despatch order; not always the first to arrive).",
-        "exceeds_six_min_target": "Nullable boolean: True if attendance_time_seconds > 360, False if <=360, pd.NA if missing. Same semantics as the canonical incident artefact.",
+        "exceeds_six_min_target": "Nullable author-defined diagnostic: True if attendance_time_seconds > 360, False if <=360, pd.NA if missing. It is not an official per-mobilisation failure flag.",
         "borough_canonical": "BoroughName trimmed + title-cased; matches the canonical incident artefact's borough_canonical.",
         "year_month": "Year-month period of mobilised_at as 'YYYY-MM'.",
         "mobilised_hour": "Hour-of-day (0--23) of mobilised_at.",
@@ -336,7 +336,7 @@ def write_dq_memo(df: pd.DataFrame, raw_rows_total: int) -> None:
     lines.append("")
     lines.append(f"- **Mobilisation records in 2024--2026 window**: {n:,}.")
     lines.append(f"- **Records with a parsed AttendanceTimeSeconds**: {rt_present_pct:.1f}\\%.")
-    lines.append(f"- **Attendance time exceeds the 6-minute target** (among records with a recorded time): {exceed_among_present:.1f}\\%.")
+    lines.append(f"- **Author-derived share above 360 seconds** (among records with a recorded time; not an official per-mobilisation failure rate): {exceed_among_present:.1f}\\%.")
     lines.append(f"- **Rows flagged as first-arriving pump** (`PerformanceReporting == '1'`): {first_arriving_share:.1f}\\%.")
     lines.append(f"- **Rows flagged as first-ordered pump** (`PumpOrder == 1`): {first_ordered_share:.1f}\\%.")
     lines.append(f"- **Rows whose `IncidentNumber` matches the canonical incident artefact** (`matches_canonical_incident`): {matches_canonical_pct:.2f}\\%; the remaining {unmatched_count:,} rows are typically cross-boundary mobilisations into adjoining authorities (Buckinghamshire / Slough / Surrey) or rows from data-vintage drift between the two open-data releases. Downstream §6 / dashboard aggregations should filter on `matches_canonical_incident` to avoid silently mixing non-canonical incidents into canonical-window claims.")

@@ -29,6 +29,8 @@ Response fields:
 
 Returns borough x month x incident-group aggregate rows from `lfb_borough_summary_2024_2026.parquet`.
 
+Each row includes the recorded-time numerator and denominator, a two-sided 95% Wilson interval for the author-derived share above 360 seconds, a descriptive small-sample flag (`recorded n < 30`), and a partial-month flag. The share is not an official per-incident LFB failure rate; LFB's published six-minute target is a pan-London average.
+
 Allowed query parameters, all optional and repeatable:
 
 | Query key | Meaning |
@@ -81,7 +83,7 @@ Response fields:
 | Field | Type | Notes |
 |---|---|---|
 | `rows` | object[] | one row per station footprint |
-| `row_count` | integer | current expected value: 102 |
+| `row_count` | integer | current expected value: 102 distinct `IncidentStationGround` assignment-footprint labels in this slice |
 | `disclaimer` | string | required proxy framing |
 
 Each row must include at least:
@@ -92,7 +94,7 @@ Each row must include at least:
 | `longitude` | number or null |
 | `latitude` | number or null |
 
-Important: this endpoint does not return published fire-station building coordinates. It returns assignment-footprint centroids derived from incident records.
+Important: this endpoint does not return a verified register of operating stations or fire-station building coordinates. It returns centroids for the distinct assignment-area labels found in the incident records.
 
 ## `GET /api/footprint_scenario`
 
@@ -111,7 +113,7 @@ Success response:
 | `rows` | object[] | one row per borough / local-authority area |
 | `row_count` | integer | current expected value: 33 |
 | `stations_removed` | string[] | station names removed by the query |
-| `stations_open_count` | integer | number of station footprints remaining |
+| `stations_open_count` | integer | number of assignment-footprint labels remaining (legacy field name retained for compatibility) |
 | `disclaimer` | string | required proxy framing |
 
 Each row must include at least:

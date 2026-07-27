@@ -9,7 +9,7 @@
 
 | Column | Dtype | Notes |
 |---|---|---|
-| `station_name` | str | Distinct value of IncidentStationGround from the canonical LFB dataset (102 stations in the 2024-2026 slice). |
+| `station_name` | str | Distinct IncidentStationGround assignment-area label in the canonical slice; not a verified operating-station register. |
 | `incident_count` | int64 | Number of incidents the station was ground responsibility for in the slice; used as a station-size context value. |
 | `easting_centroid_m` | float64 | Median Easting_rounded of the station's incidents (OSGB36, metres). |
 | `northing_centroid_m` | float64 | Median Northing_rounded of the station's incidents (OSGB36, metres). |
